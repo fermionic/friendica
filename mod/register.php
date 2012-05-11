@@ -266,7 +266,7 @@ function register_content(&$a) {
 		'$fillext'   => $fillext,
 		'$oidlabel'  => $oidlabel,
 		'$openid'    => $openid_url,
-		'$namelabel' => t('Your Full Name ' . "\x28" . 'e.g. Joe Smith' . "\x29" . ': '),
+		'$namelabel' => t('Your Display Name ' . "\x28" . 'e.g. Joe Smith' . "\x29" . ': '),
 		'$addrlabel' => t('Your Email Address: '),
 		'$nickdesc'  => str_replace('$sitename',$a->get_hostname(),t('Choose a profile nickname. This must begin with a text character. Your profile address on this site will then be \'<strong>nickname@$sitename</strong>\'.')),
 		'$nicklabel' => t('Choose a nickname: '),
@@ -278,7 +278,11 @@ function register_content(&$a) {
 		'$nickname'  => $nickname,
 		'$license'   => $license,
 		'$sitename'  => $a->get_hostname(),
-      
+
+		'$tostitle'	=> t('Website Terms of Service'),
+		'$toslink'	=> t('terms of service'),
+		'$privacytitle'	=> t('Website Privacy Policy'),
+		'$privacylink'	=> t('privacy policy')
 	));
 	return $o;
 
