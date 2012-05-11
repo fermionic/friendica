@@ -14,6 +14,8 @@
 	{{ endif }}
 
 	<div id="login-extra-links">
+	By signing in you agree to the latest <a href="tos.html" title="$tostitle" id="terms-of-service-link" >$toslink</a> and <a href="privacy.html" title="$privacytitle" id="privacy-link" >$privacylink</a><br>
+	<br>
 		{{ if $register }}<a href="register" title="$register.title" id="register-link">$register.desc</a>{{ endif }}
         <a href="lostpass" title="$lostpass" id="lost-password-link" >$lostlink</a>
 	</div>

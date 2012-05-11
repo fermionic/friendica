@@ -34,4 +34,6 @@ Friendica Documentation and Resources
 **About**
 
 * [Site/Version Info](friendica)
+* [Terms of Service](tos.html)
+* [Privacy Policy](privacy.html)
 
