@@ -27,7 +27,7 @@ function home_content(&$a) {
 	if(file_exists('home.html'))
  		$o .= file_get_contents('home.html');
 
-	$o .= login(($a->config['register_policy'] == REGISTER_CLOSED) ? 0 : 1);
+	// $o .= login(($a->config['register_policy'] == REGISTER_CLOSED) ? 0 : 1);
 	
 	call_hooks("home_content",$o);
 	
