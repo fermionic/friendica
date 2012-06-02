@@ -1168,22 +1168,7 @@ function diaspora_comment($importer,$xml,$msg) {
 		);
 	}
 
-	if(($parent_item['origin']) && (! $parent_author_signature)) {	if(($parent_item['origin']) && (! $parent_author_signature)) {
-		q("insert into sign (`iid`,`signed_text`,`signature`,`signer`) values (%d,'%s','%s','%s') ",
-			intval($message_id),
-			dbesc($author_signed_data),
-			dbesc(base64_encode($author_signature)),
-			dbesc($diaspora_handle)
-		);
-
-		// if the message isn't already being relayed, notify others
-		// the existence of parent_author_signature means the parent_author or owner
-		// is already relaying.
-
-		proc_run('php','include/notifier.php','comment',$message_id);
-	}
-
-
+	if(($parent_item['origin']) && (! $parent_author_signature)) {
 		q("insert into sign (`iid`,`signed_text`,`signature`,`signer`) values (%d,'%s','%s','%s') ",
 			intval($message_id),
 			dbesc($author_signed_data),
@@ -2183,17 +2168,6 @@ function diaspora_send_relay($item,$owner,$contact,$public_batch = false) {
 //
 // I'm assuming for now that "$owner" will be the user of the top-level post for retractions too. Be
 // aware that another reasonable possibility is that it's the "$owner" of the deleted comment.
-
-// TODO
-// CHECK	1. If we receive a retraction from Diaspora to be relayed by us, we need to insert the signature
-//    		   into the DB and call notifier.php
-// CHECK	2. diaspora_send_retraction() needs to be modified to send
-//    		   Diaspora a retraction for it to relay when appropriate
-// CHECK	3. notifier.php (and delivery.php?) need to be modified to call the right functions for the right
-//    		   retraction situation
-// 4. If possible, modify notifier.php (and delivery.php?) to remove the relayable retraction's signature
-//    from the DB after finishing with relaying retractions
-
 
 
 	$a = get_app();
