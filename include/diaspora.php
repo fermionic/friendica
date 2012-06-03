@@ -2172,13 +2172,6 @@ function diaspora_send_followup($item,$owner,$contact,$public_batch = false) {
 
 
 function diaspora_send_relay($item,$owner,$contact,$public_batch = false) {
-// I think the first comment or like on a post whose home is our Friendica server is saved as an item
-// as the top-level post owner's contact for writer of the comment or post. Thus, the "uid"
-// on the item is `user`.`id` of the top-level post owner. That user is passed to this function
-// as "$owner."
-//
-// I'm assuming for now that "$owner" will be the user of the top-level post for retractions too. Be
-// aware that another reasonable possibility is that it's the "$owner" of the deleted comment.
 
 
 	$a = get_app();
@@ -2214,7 +2207,7 @@ function diaspora_send_relay($item,$owner,$contact,$public_batch = false) {
 //		$positive = (($item['deleted']) ? 'false' : 'true');
 		$positive = 'true';
 	}
-	elseif(! $item['deleted']) {
+	else {
 		$tpl = get_markup_template('diaspora_comment_relay.tpl');
 	}
 
