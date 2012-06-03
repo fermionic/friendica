@@ -820,6 +820,7 @@ CREATE TABLE IF NOT EXISTS `profile` (
   `region` char(255) NOT NULL,
   `postal-code` char(32) NOT NULL,
   `country-name` char(255) NOT NULL,
+  `hometown` char(255) NOT NULL,
   `gender` char(32) NOT NULL,
   `marital` char(255) NOT NULL,
   `with` text NOT NULL,
@@ -943,12 +944,14 @@ CREATE TABLE IF NOT EXISTS `session` (
 
 CREATE TABLE IF NOT EXISTS `sign` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `iid` int(10) unsigned NOT NULL,
+  `iid` int(10) unsigned NOT NULL DEFAULT '0',
+  `retract_iid` int(10) unsigned NOT NULL DEFAULT '0',
   `signed_text` mediumtext NOT NULL,
   `signature` text NOT NULL,
   `signer` char(255) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `iid` (`iid`)
+  KEY `iid` (`iid`),
+  KEY `retract_iid` (`retract_iid`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
