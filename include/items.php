@@ -3284,30 +3284,34 @@ function drop_item($id,$interactive = true) {
 			// if the comment was deleted by a remote user. That should be ok, because if a remote user is deleting
 			// the comment, that means we're the home of the post, and Diaspora will only
 			// check the parent_author_signature of retractions that it doesn't have to relay further
-			if( strcmp($item['type'], 'activity') != 0) {
-				$signed_text = $item['guid'] . ';' . 'Comment';
+			//
+			// I don't think this function gets called for an "unlike," but I'll check anyway
+			$signed_text = $item['guid'] . ';' . ( ($item['verb'] === ACTIVITY_LIKE) ? 'Like' : 'Comment');
 
-				if(local_user() == $item['uid']) {
+			if(local_user() == $item['uid']) {
 
-					$handle = $a->user['nickname'] . '@' . substr($a->get_baseurl(), strpos($a->get_baseurl(),'://') + 3);
-					$authorsig = base64_encode(rsa_sign($signed_text,$a->user['prvkey'],'sha256'));
-				}
-				else {
-					$r = q("SELECT `nick`, `url` FROM `contact` WHERE `id` = '%d' LIMIT 1",
-						$item['contact-id']
-					);
-					if(count($r))
-						$handle = $r['nick'] . '@' . substr($r['url'], strpos($r['url'],'://') + 3, strpos($r['url'],'/profile') - 1);
-				}
-
-				if(isset($handle)
-					q("insert into sign (`retract_iid`,`signed_text`,`signature`,`signer`) values (%d,'%s','%s','%s') ",
-						intval($item['id']),
-						dbesc($signed_text),
-						dbesc($authorsig),
-						dbesc($handle)
-					);
+				$handle = $a->user['nickname'] . '@' . substr($a->get_baseurl(), strpos($a->get_baseurl(),'://') + 3);
+				$authorsig = base64_encode(rsa_sign($signed_text,$a->user['prvkey'],'sha256'));
 			}
+			else {
+				$r = q("SELECT `nick`, `url` FROM `contact` WHERE `id` = '%d' LIMIT 1",
+					$item['contact-id']
+				);
+				if(count($r)) {
+					// The below handle only works for NETWORK_DFRN. I think that's ok, because this function
+					// only handles DFRN deletes
+					$handle = $r['nick'] . '@' . substr($r['url'], strpos($r['url'],'://') + 3, strpos($r['url'],'/profile') - 1);
+					$authorsig = '';
+				}
+			}
+
+			if(isset($handle))
+				q("insert into sign (`retract_iid`,`signed_text`,`signature`,`signer`) values (%d,'%s','%s','%s') ",
+					intval($item['id']),
+					dbesc($signed_text),
+					dbesc($authorsig),
+					dbesc($handle)
+				);
 		}
 		$drop_id = intval($item['id']);
 
