@@ -70,6 +70,66 @@ function stripdcode_br_cb($s) {
 }
 
 
+if(! function_exists('bb2d_extract_images')) {
+function bb2d_extract_images($body) {
+
+	$saved_image = array();
+	$orig_body = $body;
+	$new_body = '';
+
+	$cnt = 0;
+	$img_start = strpos($orig_body, '[img');
+	$img_st_close = ($img_start !== false ? strpos(substr($orig_body, $img_start), ']') : false);
+	$img_end = ($img_start !== false ? strpos(substr($orig_body, $img_start), '[/img]') : false);
+	while(($img_st_close !== false) && ($img_end !== false)) {
+
+		$img_st_close++; // make it point to AFTER the closing bracket
+		$img_end += $img_start;
+
+		if(! strcmp(substr($orig_body, $img_start + $img_st_close, 5), 'data:')) {
+			// This is an embedded image
+
+			$saved_image[$cnt] = substr($orig_body, $img_start + $img_st_close, $img_end - ($img_start + $img_st_close));
+			$new_body = $new_body . substr($orig_body, 0, $img_start) . '[$#saved_image' . $cnt . '#$]';
+
+			$cnt++;
+		}
+		else
+			$new_body = $new_body . substr($orig_body, 0, $img_end + strlen('[/img]'));
+
+		$orig_body = substr($orig_body, $img_end + strlen('[/img]'));
+
+		if($orig_body === false) // in case the body ends on a closing image tag
+			$orig_body = '';
+
+		$img_start = strpos($orig_body, '[img');
+		$img_st_close = ($img_start !== false ? strpos(substr($orig_body, $img_start), ']') : false);
+		$img_end = ($img_start !== false ? strpos(substr($orig_body, $img_start), '[/img]') : false);
+	}
+
+	$new_body = $new_body . $orig_body;
+
+	return array('body' => $new_body, 'images' => $saved_image);
+}}
+
+if(! function_exists('bb2d_replace_images')) {
+function bb2d_replace_images($body, $images) {
+
+	$newbody = $body;
+
+	$cnt = 0;
+	foreach($images as $image) {
+		// We're depending on the property of 'foreach' (specified on the PHP website) that
+		// it loops over the array starting from the first element and going sequentially
+		// to the last element
+		$newbody = str_replace('[$#saved_image' . $cnt . '#$]', '<img src="' . $image .'" alt="' . t('Image/photo') . '" />', $newbody);
+		$cnt++;
+	}
+
+	return $newbody;
+}}
+
+
 //////////////////////
 // The following "diaspora_ul" and "diaspora_ol" are only appropriate for the
 // pre-Markdownify conversion. If Markdownify isn't used, use the non-Markdownify
@@ -186,6 +246,15 @@ function bb2diaspora($Text,$preserve_nl = false) {
 // end of bb->html->md conversion attempt
 //////
 
+
+
+	// Extract the private images which use data url's since preg has issues with
+	// large data sizes. Stash them away while we do bbcode conversion, and then put them back
+	// in after we've done all the regex matching. We cannot use any preg functions to do this.
+
+	$extracted = bb2d_extract_images($Text);
+	$Text = $extracted['body'];
+	$saved_image = $extracted['images'];
 
 
 	$ev = bbtoevent($Text);
@@ -362,6 +431,9 @@ function bb2diaspora($Text,$preserve_nl = false) {
 
 	$Text = preg_replace_callback('/\[(.*?)\]\((.*?)\)/ism','unescape_underscores_in_links',$Text);
 
+
+	if($saved_image)
+		$Text = bb2d_replace_images($Text, $saved_image);
 
 	// Remove any leading or trailing whitespace, as this will mess up
 	// the Diaspora signature verification and cause the item to disappear
