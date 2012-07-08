@@ -2197,7 +2197,7 @@ function diaspora_send_status($item,$owner,$contact,$public_batch = false) {
 	$images = array();
 
 	$title = $item['title'];
-	$body = $item['body'];
+	$body = fix_private_photos($item['body'], $owner['uid'], $item, $contact['id']);
 
 /*
 	// We're trying to match Diaspora's split message/photo protocol but
