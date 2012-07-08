@@ -91,7 +91,7 @@ function bb2d_extract_images($body) {
 			// This is an embedded image
 
 			$saved_image[$cnt] = substr($orig_body, $img_start + $img_st_close, $img_end - ($img_start + $img_st_close));
-			$new_body = $new_body . substr($orig_body, 0, $img_start) . '[$#saved_image' . $cnt . '#$]';
+			$new_body = $new_body . substr($orig_body, 0, $img_start) . '[$#savedimage' . $cnt . '#$]';
 
 			$cnt++;
 		}
@@ -123,7 +123,7 @@ function bb2d_replace_images($body, $images) {
 		// We're depending on the property of 'foreach' (specified on the PHP website) that
 		// it loops over the array starting from the first element and going sequentially
 		// to the last element
-		$newbody = str_replace('[$#saved_image' . $cnt . '#$]', '<img src="' . $image .'" alt="' . t('Image/photo') . '" />', $newbody);
+		$newbody = str_replace('[$#savedimage' . $cnt . '#$]', '![' . t('Image/photo') . '](' . $image . ')', $newbody);
 		$cnt++;
 	}
 
