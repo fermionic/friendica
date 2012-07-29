@@ -383,8 +383,10 @@ function photos_post(&$a) {
 		/* Don't make the item visible if the only change was the album name */
 
 		$visibility = 0;
-		if($p[0]['desc'] !== $desc || strlen($rawtags))
-			$visibility = 1;
+		/* I prefer not to have photos show back up on the wall and for other people
+		   when such minor changes are made at all */
+//		if($p[0]['desc'] !== $desc || strlen($rawtags))
+//			$visibility = 1;
 		
 		if(! $item_id) {
 
