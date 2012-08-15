@@ -5,7 +5,278 @@ function uexport_init(&$a) {
 	if(! local_user())
 		killme();
 
-	$user = array();
+	$r = q("SELECT * FROM `user` WHERE `uid` = %d LIMIT 1",
+		local_user()
+	);
+	if(! count($r))
+		killme();
+
+	$db = new PDO("sqlite:" . $r['nickname'] . ".sqlite;");
+	$db->exec("CREATE TABLE IF NOT EXISTS user (
+		uid integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		guid text NOT NULL,
+		username text NOT NULL,
+		password text NOT NULL,
+		nickname text NOT NULL,
+		email text NOT NULL,
+		openid text NOT NULL,
+		timezone text NOT NULL,
+		language text NOT NULL DEFAULT 'en',
+		register_date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		login_date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		default-location text NOT NULL,
+		allow_location integer NOT NULL DEFAULT '0',
+		theme text NOT NULL,
+		pubkey text NOT NULL,
+		prvkey text NOT NULL,
+		spubkey text NOT NULL,
+		sprvkey text NOT NULL,
+		verified integer NOT NULL DEFAULT '0',
+		blocked integer NOT NULL DEFAULT '0',
+		blockwall integer NOT NULL DEFAULT '0',
+		hidewall integer NOT NULL DEFAULT '0',
+		blocktags integer NOT NULL DEFAULT '0',
+		unkmail integer NOT NULL DEFAULT '0',
+		cntunkmail integer NOT NULL DEFAULT '10',
+		notify-flags integer NOT NULL DEFAULT '65535',
+		page-flags integer NOT NULL DEFAULT '0',
+		prvnets integer NOT NULL DEFAULT '0',
+		pwdreset text NOT NULL,
+		maxreq integer NOT NULL DEFAULT '10',
+		expire integer NOT NULL DEFAULT '0',
+		account_removed integer NOT NULL DEFAULT '0',
+		account_expired integer NOT NULL DEFAULT '0',
+		account_expires_on text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		expire_notification_sent text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		service_class text NOT NULL,
+		def_gid integer NOT NULL DEFAULT '0',
+		allow_cid text NOT NULL,
+		allow_gid text NOT NULL,
+		deny_cid text NOT NULL,
+		deny_gid text NOT NULL,
+		openidserver text NOT NULL
+	);");
+	$db->exec("CREATE TABLE IF NOT EXISTS contact (
+		id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		uid integer NOT NULL,
+		created text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		self integer NOT NULL DEFAULT '0',
+		remote_self integer NOT NULL DEFAULT '0',
+		rel integer NOT NULL DEFAULT '0',
+		duplex integer NOT NULL DEFAULT '0',
+		network text NOT NULL,
+		name text NOT NULL,
+		nick text NOT NULL,
+		attag text NOT NULL,
+		photo text NOT NULL,
+		thumb text NOT NULL,
+		micro text NOT NULL,
+		site-pubkey text NOT NULL,
+		issued-id text NOT NULL,
+		dfrn-id text NOT NULL,
+		url text NOT NULL,
+		nurl text NOT NULL,
+		addr text NOT NULL,
+		alias text NOT NULL,
+		pubkey text NOT NULL,
+		prvkey text NOT NULL,
+		batch text NOT NULL,
+		request text NOT NULL,
+		notify text NOT NULL,
+		poll text NOT NULL,
+		confirm text NOT NULL,
+		poco text NOT NULL,
+		aes_allow integer NOT NULL DEFAULT '0',
+		ret-aes integer NOT NULL DEFAULT '0',
+		usehub integer NOT NULL DEFAULT '0',
+		subhub integer NOT NULL DEFAULT '0',
+		hub-verify text NOT NULL,
+		last-update text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		success_update text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		name-date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		uri-date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		avatar-date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		term-date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		priority integer NOT NULL,
+		blocked integer NOT NULL DEFAULT '1',
+		readonly integer NOT NULL DEFAULT '0',
+		writable integer NOT NULL DEFAULT '0',
+		forum integer NOT NULL DEFAULT '0',
+		prv integer NOT NULL DEFAULT '0',
+		hidden integer NOT NULL DEFAULT '0',
+		archive integer NOT NULL DEFAULT '0',
+		pending integer NOT NULL DEFAULT '1',
+		rating integer NOT NULL DEFAULT '0',
+		reason text NOT NULL,
+		closeness integer NOT NULL DEFAULT '99',
+		info text NOT NULL,
+		profile-id integer NOT NULL DEFAULT '0',
+		bdyear text NOT NULL,
+		bd date NOT NULL
+	);");
+	db->exec("CREATE TABLE IF NOT EXISTS profile (
+		id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		uid integer NOT NULL,
+		profile-name text NOT NULL,
+		is-default integer NOT NULL DEFAULT '0',
+		hide-friends integer NOT NULL DEFAULT '0',
+		name text NOT NULL,
+		pdesc text NOT NULL,
+		dob text NOT NULL DEFAULT '0000-00-00',
+		address text NOT NULL,
+		locality text NOT NULL,
+		region text NOT NULL,
+		postal-code text NOT NULL,
+		country-name text NOT NULL,
+		hometown text NOT NULL,
+		gender text NOT NULL,
+		marital text NOT NULL,
+		with text NOT NULL,
+		howlong text NOT NULL default '0000-00-00 00:00:00',
+		sexual text NOT NULL,
+		politic text NOT NULL,
+		religion text NOT NULL,
+		pub_keywords text NOT NULL,
+		prv_keywords text NOT NULL,
+		likes text NOT NULL,
+		dislikes text NOT NULL,
+		about text NOT NULL,
+		summary text NOT NULL,
+		music text NOT NULL,
+		book text NOT NULL,
+		tv text NOT NULL,
+		film text NOT NULL,
+		interest text NOT NULL,
+		romance text NOT NULL,
+		work text NOT NULL,
+		education text NOT NULL,
+		contact text NOT NULL,
+		homepage text NOT NULL,
+		photo text NOT NULL,
+		thumb text NOT NULL,
+		publish integer NOT NULL DEFAULT '0',
+		net-publish integer NOT NULL DEFAULT '0'
+	);");
+	$db->exec("CREATE TABLE IF NOT EXISTS item (
+		id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		guid text NOT NULL,
+		uri text CHARACTER SET ascii NOT NULL,
+		uid integer NOT NULL DEFAULT '0',
+		contact-id integer NOT NULL DEFAULT '0',
+		type text NOT NULL,
+		wall integer NOT NULL DEFAULT '0',
+		gravity integer NOT NULL DEFAULT '0',
+		parent integer NOT NULL DEFAULT '0',
+		parent-uri text CHARACTER SET ascii NOT NULL,
+		extid text NOT NULL,
+		thr-parent text NOT NULL,
+		created text NOT NULL,
+		edited text NOT NULL,
+		commented text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		received text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		changed text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		owner-name text NOT NULL,
+		owner-link text NOT NULL,
+		owner-avatar text NOT NULL,
+		author-name text NOT NULL,
+		author-link text NOT NULL,
+		author-avatar text NOT NULL,
+		title text NOT NULL,
+		body text NOT NULL,
+		app text NOT NULL,
+		verb text NOT NULL,
+		object-type text NOT NULL,
+		object text NOT NULL,
+		target-type text NOT NULL,
+		target text NOT NULL,
+		postopts text NOT NULL,
+		plink text NOT NULL,
+		resource-id text NOT NULL,
+		event-id integer NOT NULL,
+		tag text NOT NULL,
+		attach text NOT NULL,
+		inform text NOT NULL,
+		file text NOT NULL,
+		location text NOT NULL,
+		coord text NOT NULL,
+		allow_cid text NOT NULL,
+		allow_gid text NOT NULL,
+		deny_cid text NOT NULL,
+		deny_gid text NOT NULL,
+		private integer NOT NULL DEFAULT '0',
+		pubmail integer NOT NULL DEFAULT '0',
+		moderated integer NOT NULL DEFAULT '0',
+		visible integer NOT NULL DEFAULT '0',
+		spam integer NOT NULL DEFAULT '0',
+		starred integer NOT NULL DEFAULT '0',
+		bookmark integer NOT NULL DEFAULT '0',
+		unseen integer NOT NULL DEFAULT '1',
+		deleted integer NOT NULL DEFAULT '0',
+		origin integer NOT NULL DEFAULT '0',
+		forum_mode integer NOT NULL DEFAULT '0',
+		last-child integer NOT NULL DEFAULT '1'
+	);");
+
+
+
+	foreach($r as $user_line)
+		$db->exec("INSERT INTO user (" . implode(",", array_keys($user_line)) . ") VALUES (" . implode(",", $user_line) . ");");
+
+	$r = q("SELECT * FROM `contact` WHERE `uid` = %d ",
+		intval(local_user())
+	);
+	if(count($r)) {
+		foreach($r as $contact_line)
+			$db->exec("INSERT INTO contact (" . implode(",", array_keys($contact_line)) . ") VALUES (" . implode(",", $contact_line) . ");");
+	}
+
+	$r = q("SELECT * FROM `profile` WHERE `uid` = %d ",
+		intval(local_user())
+	);
+	if(count($r)) {
+		foreach($r as $profile_line)
+			$db->exec("INSERT INTO profile (" . implode(",", array_keys($profile_line)) . ") VALUES (" . implode(",", $profile_line) . ");");
+	}
+
+	$r = q("SELECT count(*) as `total` FROM `item` WHERE `uid` = %d ",
+		intval(local_user())
+	);
+	if(count($r))
+		$total = $r[0]['total'];
+	else
+		$total = 0;
+
+	// chunk the items table to avoid exhausting memory
+
+	for($x = 0; $x < $total; $x += 500) {
+		$r = q("SELECT * FROM `item` WHERE `uid` = %d LIMIT %d, %d",
+			intval(local_user()),
+			intval($x),
+			intval(500)
+		);
+		if(count($r)) {
+			foreach($r as $item_line)
+				$db->exec("INSERT INTO item (" . implode(",", array_keys($item_line)) . ") VALUES (" . implode(",", $item_line) . ");");
+		}
+	}
+
+	$db = NULL;
+
+	header('Content-Type: application/octet-stream');
+	header('Content-Disposition: attachment; filename="'.basename(XXXFILEXXX).'"');
+	header('Content-Transfer-Encoding: binary');
+	header('Content-Length: '.filesize(XXXFILEPATHXXX));
+	header('Expires: 0');
+
+#	$handle = fopen(XXXFILEPATHXXX, 'rb');
+#	fpassthru($handle);
+#	fclose($handle);
+	ob_clean();
+    flush();	
+	readfile(XXXFILEPATHXXX);
+
+
+/*	$user = array();
 	$r = q("SELECT * FROM `user` WHERE `uid` = %d LIMIT 1",
 		local_user()
 	);
@@ -65,7 +336,7 @@ function uexport_init(&$a) {
 		$output = array('item' => $item);
 		echo json_encode($output);
 	}
-
+*/
 
 	killme();
 

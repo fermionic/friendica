@@ -1,0 +1,925 @@
+-- phpMyAdmin SQL Dump
+-- version 3.3.10.4
+-- http://www.phpmyadmin.net
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table addon
+--
+
+CREATE TABLE IF NOT EXISTS addon (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name text NOT NULL,
+  version text NOT NULL,
+  installed integer NOT NULL DEFAULT '0',
+  hidden integer NOT NULL DEFAULT '0',
+  timestamp integer NOT NULL DEFAULT '0',
+  plugin_admin integer NOT NULL DEFAULT '0',
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table attach
+--
+
+CREATE TABLE IF NOT EXISTS attach (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  hash text NOT NULL,
+  filename text NOT NULL,
+  filetype text NOT NULL,
+  filesize integer NOT NULL,
+  data blob NOT NULL,
+  created text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  edited text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  allow_cid text NOT NULL,
+  allow_gid text NOT NULL,
+  deny_cid text NOT NULL,
+  deny_gid text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table auth_codes
+--
+
+CREATE TABLE IF NOT EXISTS auth_codes (
+  id text NOT NULL,
+  client_id text NOT NULL,
+  redirect_uri text NOT NULL,
+  expires integer NOT NULL,
+  scope text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table cache
+--
+
+CREATE TABLE IF NOT EXISTS cache (
+  k text NOT NULL,
+  v text NOT NULL,
+  updated text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table challenge
+--
+
+CREATE TABLE IF NOT EXISTS challenge (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  challenge text NOT NULL,
+  dfrn-id text NOT NULL,
+  expire integer NOT NULL,
+  type text NOT NULL,
+  last_update text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table clients
+--
+
+CREATE TABLE IF NOT EXISTS clients (
+  client_id text NOT NULL,
+  pw text NOT NULL,
+  redirect_uri text NOT NULL,
+  name text,
+  icon text,
+  uid integer NOT NULL DEFAULT '0',
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table config
+--
+
+CREATE TABLE IF NOT EXISTS config (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  cat text CHARACTER SET ascii NOT NULL,
+  k text CHARACTER SET ascii NOT NULL,
+  v text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table contact
+--
+
+CREATE TABLE IF NOT EXISTS contact (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  created text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  self integer NOT NULL DEFAULT '0',
+  remote_self integer NOT NULL DEFAULT '0',
+  rel integer NOT NULL DEFAULT '0',
+  duplex integer NOT NULL DEFAULT '0',
+  network text NOT NULL,
+  name text NOT NULL,
+  nick text NOT NULL,
+  attag text NOT NULL,
+  photo text NOT NULL,
+  thumb text NOT NULL,
+  micro text NOT NULL,
+  site-pubkey text NOT NULL,
+  issued-id text NOT NULL,
+  dfrn-id text NOT NULL,
+  url text NOT NULL,
+  nurl text NOT NULL,
+  addr text NOT NULL,
+  alias text NOT NULL,
+  pubkey text NOT NULL,
+  prvkey text NOT NULL,
+  batch text NOT NULL,
+  request text NOT NULL,
+  notify text NOT NULL,
+  poll text NOT NULL,
+  confirm text NOT NULL,
+  poco text NOT NULL,
+  aes_allow integer NOT NULL DEFAULT '0',
+  ret-aes integer NOT NULL DEFAULT '0',
+  usehub integer NOT NULL DEFAULT '0',
+  subhub integer NOT NULL DEFAULT '0',
+  hub-verify text NOT NULL,
+  last-update text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  success_update text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  name-date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  uri-date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  avatar-date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  term-date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  priority integer NOT NULL,
+  blocked integer NOT NULL DEFAULT '1',
+  readonly integer NOT NULL DEFAULT '0',
+  writable integer NOT NULL DEFAULT '0',
+  forum integer NOT NULL DEFAULT '0',
+  prv integer NOT NULL DEFAULT '0',
+  hidden integer NOT NULL DEFAULT '0',
+  archive integer NOT NULL DEFAULT '0',
+  pending integer NOT NULL DEFAULT '1',
+  rating integer NOT NULL DEFAULT '0',
+  reason text NOT NULL,
+  closeness integer NOT NULL DEFAULT '99',
+  info text NOT NULL,
+  profile-id integer NOT NULL DEFAULT '0',
+  bdyear text NOT NULL,
+  bd date NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table conv
+--
+
+CREATE TABLE IF NOT EXISTS conv (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  guid text NOT NULL,
+  recips text NOT NULL,
+  uid integer NOT NULL,
+  creator text NOT NULL,
+  created text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  updated text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  subject text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table deliverq
+--
+
+CREATE TABLE IF NOT EXISTS deliverq (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  cmd text NOT NULL,
+  item integer NOT NULL,
+  contact integer NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table event
+--
+
+CREATE TABLE IF NOT EXISTS event (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  cid integer NOT NULL,
+  uri text NOT NULL,
+  created text NOT NULL,
+  edited text NOT NULL,
+  start text NOT NULL,
+  finish text NOT NULL,
+  summary text NOT NULL,
+  desc text NOT NULL,
+  location text NOT NULL,
+  type text NOT NULL,
+  nofinish integer NOT NULL DEFAULT '0',
+  adjust integer NOT NULL DEFAULT '1',
+  allow_cid text NOT NULL,
+  allow_gid text NOT NULL,
+  deny_cid text NOT NULL,
+  deny_gid text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table fcontact
+--
+
+CREATE TABLE IF NOT EXISTS fcontact (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  url text NOT NULL,
+  name text NOT NULL,
+  photo text NOT NULL,
+  request text NOT NULL,
+  nick text NOT NULL,
+  addr text NOT NULL,
+  batch text NOT NULL,
+  notify text NOT NULL,
+  poll text NOT NULL,
+  confirm text NOT NULL,
+  priority integer NOT NULL,
+  network text NOT NULL,
+  alias text NOT NULL,
+  pubkey text NOT NULL,
+  updated text NOT NULL DEFAULT '0000-00-00 00:00:00',
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table ffinder
+--
+
+CREATE TABLE IF NOT EXISTS ffinder (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  cid integer NOT NULL,
+  fid integer NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table fserver
+--
+
+CREATE TABLE IF NOT EXISTS fserver (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  server text NOT NULL,
+  posturl text NOT NULL,
+  key text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table fsuggest
+--
+
+CREATE TABLE IF NOT EXISTS fsuggest (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  cid integer NOT NULL,
+  name text NOT NULL,
+  url text NOT NULL,
+  request text NOT NULL,
+  photo text NOT NULL,
+  note text NOT NULL,
+  created text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table gcign
+--
+
+CREATE TABLE IF NOT EXISTS gcign (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  gcid integer NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table gcontact
+--
+
+CREATE TABLE IF NOT EXISTS gcontact (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name text NOT NULL,
+  url text NOT NULL,
+  nurl text NOT NULL,
+  photo text NOT NULL,
+  connect text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table glink
+--
+
+CREATE TABLE IF NOT EXISTS glink (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  cid integer NOT NULL,
+  uid integer NOT NULL,
+  gcid integer NOT NULL,
+  zcid integer NOT NULL,
+  updated text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table group
+--
+
+CREATE TABLE IF NOT EXISTS group (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  visible integer NOT NULL DEFAULT '0',
+  deleted integer NOT NULL DEFAULT '0',
+  name text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table group_member
+--
+
+CREATE TABLE IF NOT EXISTS group_member (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  gid integer NOT NULL,
+  contact-id integer NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table guid
+--
+
+CREATE TABLE IF NOT EXISTS guid (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  guid text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table hook
+--
+
+CREATE TABLE IF NOT EXISTS hook (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  hook text NOT NULL,
+  file text NOT NULL,
+  function text NOT NULL,
+  priority integer UNSIGNED NOT NULL DEFAULT '0',
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table intro
+--
+
+CREATE TABLE IF NOT EXISTS intro (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  fid integer NOT NULL DEFAULT '0',
+  contact-id integer NOT NULL,
+  knowyou integer NOT NULL,
+  duplex integer NOT NULL DEFAULT '0',
+  note text NOT NULL,
+  hash text NOT NULL,
+  datetime text NOT NULL,
+  blocked integer NOT NULL DEFAULT '1',
+  ignore integer NOT NULL DEFAULT '0',
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table item
+--
+
+CREATE TABLE IF NOT EXISTS item (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  guid text NOT NULL,
+  uri text CHARACTER SET ascii NOT NULL,
+  uid integer NOT NULL DEFAULT '0',
+  contact-id integer NOT NULL DEFAULT '0',
+  type text NOT NULL,
+  wall integer NOT NULL DEFAULT '0',
+  gravity integer NOT NULL DEFAULT '0',
+  parent integer NOT NULL DEFAULT '0',
+  parent-uri text CHARACTER SET ascii NOT NULL,
+  extid text NOT NULL,
+  thr-parent text NOT NULL,
+  created text NOT NULL,
+  edited text NOT NULL,
+  commented text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  received text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  changed text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  owner-name text NOT NULL,
+  owner-link text NOT NULL,
+  owner-avatar text NOT NULL,
+  author-name text NOT NULL,
+  author-link text NOT NULL,
+  author-avatar text NOT NULL,
+  title text NOT NULL,
+  body text NOT NULL,
+  app text NOT NULL,
+  verb text NOT NULL,
+  object-type text NOT NULL,
+  object text NOT NULL,
+  target-type text NOT NULL,
+  target text NOT NULL,
+  postopts text NOT NULL,
+  plink text NOT NULL,
+  resource-id text NOT NULL,
+  event-id integer NOT NULL,
+  tag text NOT NULL,
+  attach text NOT NULL,
+  inform text NOT NULL,
+  file text NOT NULL,
+  location text NOT NULL,
+  coord text NOT NULL,
+  allow_cid text NOT NULL,
+  allow_gid text NOT NULL,
+  deny_cid text NOT NULL,
+  deny_gid text NOT NULL,
+  private integer NOT NULL DEFAULT '0',
+  pubmail integer NOT NULL DEFAULT '0',
+  moderated integer NOT NULL DEFAULT '0',
+  visible integer NOT NULL DEFAULT '0',
+  spam integer NOT NULL DEFAULT '0',
+  starred integer NOT NULL DEFAULT '0',
+  bookmark integer NOT NULL DEFAULT '0',
+  unseen integer NOT NULL DEFAULT '1',
+  deleted integer NOT NULL DEFAULT '0',
+  origin integer NOT NULL DEFAULT '0',
+  forum_mode integer NOT NULL DEFAULT '0',
+  last-child integer NOT NULL DEFAULT '1',
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table item_id
+--
+
+CREATE TABLE IF NOT EXISTS item_id (
+  iid integer NOT NULL,
+  uid integer NOT NULL,
+  sid text NOT NULL,
+  service text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table locks
+--
+
+CREATE TABLE locks (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name text NOT NULL,
+  locked integer NOT NULL DEFAULT '0',
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table mail
+--
+
+CREATE TABLE IF NOT EXISTS mail (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  guid text NOT NULL,
+  from-name text NOT NULL,
+  from-photo text NOT NULL,
+  from-url text NOT NULL,
+  contact-id text NOT NULL,
+  convid integer NOT NULL,
+  title text NOT NULL,
+  body text NOT NULL,
+  seen integer NOT NULL,
+  reply integer NOT NULL DEFAULT '0',
+  replied integer NOT NULL,
+  unknown integer NOT NULL DEFAULT '0',
+  uri text NOT NULL,
+  parent-uri text NOT NULL,
+  created text NOT NULL DEFAULT '0000-00-00 00:00:00',
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table mailacct
+--
+
+CREATE TABLE IF NOT EXISTS mailacct (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  server text NOT NULL,
+  port integer NOT NULL,
+  ssltype text NOT NULL,
+  mailbox text NOT NULL,
+  user text NOT NULL,
+  pass text NOT NULL,
+  action integer NOT NULL,
+  movetofolder text NOT NULL,
+  reply_to text NOT NULL,
+  pubmail integer NOT NULL DEFAULT '0',
+  last_check text NOT NULL DEFAULT '0000-00-00 00:00:00',
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table manage
+--
+
+CREATE TABLE IF NOT EXISTS manage (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  mid integer NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table notify
+--
+
+CREATE TABLE IF NOT EXISTS notify (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  hash text NOT NULL,
+  name text NOT NULL,
+  url text NOT NULL,
+  photo text NOT NULL,
+  date text NOT NULL,
+  msg text NOT NULL,
+  uid integer NOT NULL,
+  link text NOT NULL,
+  parent integer NOT NULL,
+  seen integer NOT NULL DEFAULT '0',
+  type integer NOT NULL,
+  verb text NOT NULL,
+  otype text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table notify-threads
+--
+
+CREATE TABLE IF NOT EXISTS notify-threads (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  notify-id integer NOT NULL,
+  master-parent-item integer NOT NULL DEFAULT '0',
+  parent-item integer NOT NULL DEFAULT '0',
+  receiver-uid integer NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table pconfig
+--
+
+CREATE TABLE IF NOT EXISTS pconfig (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL DEFAULT '0',
+  cat text CHARACTER SET ascii NOT NULL,
+  k text CHARACTER SET ascii NOT NULL,
+  v text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table photo
+--
+
+CREATE TABLE IF NOT EXISTS photo (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  contact-id integer NOT NULL DEFAULT '0',
+  guid text NOT NULL,
+  resource-id text NOT NULL,
+  created text NOT NULL,
+  edited text NOT NULL,
+  title text NOT NULL,
+  desc text NOT NULL,
+  album text NOT NULL,
+  filename text NOT NULL,
+  type CHAR(128);
+  height integer NOT NULL,
+  width integer NOT NULL,
+  data blob NOT NULL,
+  scale integer NOT NULL,
+  profile integer NOT NULL DEFAULT '0',
+  allow_cid text NOT NULL,
+  allow_gid text NOT NULL,
+  deny_cid text NOT NULL,
+  deny_gid text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table poll
+--
+
+CREATE TABLE IF NOT EXISTS poll (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  q0 text NOT NULL,
+  q1 text NOT NULL,
+  q2 text NOT NULL,
+  q3 text NOT NULL,
+  q4 text NOT NULL,
+  q5 text NOT NULL,
+  q6 text NOT NULL,
+  q7 text NOT NULL,
+  q8 text NOT NULL,
+  q9 text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table poll_result
+--
+
+CREATE TABLE IF NOT EXISTS poll_result (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  poll_id integer NOT NULL,
+  choice integer NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table profile
+--
+
+CREATE TABLE IF NOT EXISTS profile (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  profile-name text NOT NULL,
+  is-default integer NOT NULL DEFAULT '0',
+  hide-friends integer NOT NULL DEFAULT '0',
+  name text NOT NULL,
+  pdesc text NOT NULL,
+  dob text NOT NULL DEFAULT '0000-00-00',
+  address text NOT NULL,
+  locality text NOT NULL,
+  region text NOT NULL,
+  postal-code text NOT NULL,
+  country-name text NOT NULL,
+  hometown text NOT NULL,
+  gender text NOT NULL,
+  marital text NOT NULL,
+  with text NOT NULL,
+  howlong text NOT NULL default '0000-00-00 00:00:00',
+  sexual text NOT NULL,
+  politic text NOT NULL,
+  religion text NOT NULL,
+  pub_keywords text NOT NULL,
+  prv_keywords text NOT NULL,
+  likes text NOT NULL,
+  dislikes text NOT NULL,
+  about text NOT NULL,
+  summary text NOT NULL,
+  music text NOT NULL,
+  book text NOT NULL,
+  tv text NOT NULL,
+  film text NOT NULL,
+  interest text NOT NULL,
+  romance text NOT NULL,
+  work text NOT NULL,
+  education text NOT NULL,
+  contact text NOT NULL,
+  homepage text NOT NULL,
+  photo text NOT NULL,
+  thumb text NOT NULL,
+  publish integer NOT NULL DEFAULT '0',
+  net-publish integer NOT NULL DEFAULT '0',
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table profile_check
+--
+
+CREATE TABLE IF NOT EXISTS profile_check (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  cid integer NOT NULL DEFAULT '0',
+  dfrn_id text NOT NULL,
+  sec text NOT NULL,
+  expire integer NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table queue
+--
+
+CREATE TABLE IF NOT EXISTS queue (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  cid integer NOT NULL,
+  network text NOT NULL,
+  created text NOT NULL,
+  last text NOT NULL,
+  content text NOT NULL,
+  batch integer NOT NULL DEFAULT '0',
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table register
+--
+
+CREATE TABLE IF NOT EXISTS register (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  hash text NOT NULL,
+  created text NOT NULL,
+  uid integer NOT NULL,
+  password text NOT NULL,
+  language text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table search
+--
+
+CREATE TABLE IF NOT EXISTS search (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  term text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table session
+--
+
+CREATE TABLE IF NOT EXISTS session (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  sid text NOT NULL,
+  data text NOT NULL,
+  expire integer NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table sign
+--
+
+CREATE TABLE IF NOT EXISTS sign (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  iid integer NOT NULL DEFAULT '0',
+  retract_iid integer NOT NULL DEFAULT '0',
+  signed_text text NOT NULL,
+  signature text NOT NULL,
+  signer text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table spam
+--
+
+CREATE TABLE IF NOT EXISTS spam (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  uid integer NOT NULL,
+  spam integer NOT NULL DEFAULT '0',
+  ham integer NOT NULL DEFAULT '0',
+  term text NOT NULL,
+  date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table term
+--
+
+CREATE TABLE IF NOT EXISTS term (
+  tid INT UNSIGNED NOT NULL PRIMARY KEY AUTOINCREMENT,
+  oid INT UNSIGNED NOT NULL ,
+  otype TINYINT( 3 );
+  type TINYINT( 3 );
+  term CHAR( 255 );
+  url CHAR( 255 );
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table tokens
+--
+
+CREATE TABLE IF NOT EXISTS tokens (
+  id text NOT NULL,
+  secret text NOT NULL,
+  client_id text NOT NULL,
+  expires integer NOT NULL,
+  scope text NOT NULL,
+  uid integer NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table user
+--
+
+CREATE TABLE IF NOT EXISTS user (
+  uid integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  guid text NOT NULL,
+  username text NOT NULL,
+  password text NOT NULL,
+  nickname text NOT NULL,
+  email text NOT NULL,
+  openid text NOT NULL,
+  timezone text NOT NULL,
+  language text NOT NULL DEFAULT 'en',
+  register_date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  login_date text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  default-location text NOT NULL,
+  allow_location integer NOT NULL DEFAULT '0',
+  theme text NOT NULL,
+  pubkey text NOT NULL,
+  prvkey text NOT NULL,
+  spubkey text NOT NULL,
+  sprvkey text NOT NULL,
+  verified integer NOT NULL DEFAULT '0',
+  blocked integer NOT NULL DEFAULT '0',
+  blockwall integer NOT NULL DEFAULT '0',
+  hidewall integer NOT NULL DEFAULT '0',
+  blocktags integer NOT NULL DEFAULT '0',
+  unkmail integer NOT NULL DEFAULT '0',
+  cntunkmail integer NOT NULL DEFAULT '10',
+  notify-flags integer NOT NULL DEFAULT '65535',
+  page-flags integer NOT NULL DEFAULT '0',
+  prvnets integer NOT NULL DEFAULT '0',
+  pwdreset text NOT NULL,
+  maxreq integer NOT NULL DEFAULT '10',
+  expire integer NOT NULL DEFAULT '0',
+  account_removed integer NOT NULL DEFAULT '0',
+  account_expired integer NOT NULL DEFAULT '0',
+  account_expires_on text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  expire_notification_sent text NOT NULL DEFAULT '0000-00-00 00:00:00',
+  service_class text NOT NULL,
+  def_gid integer NOT NULL DEFAULT '0',
+  allow_cid text NOT NULL,
+  allow_gid text NOT NULL,
+  deny_cid text NOT NULL,
+  deny_gid text NOT NULL,
+  openidserver text NOT NULL,
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table userd
+--
+
+CREATE TABLE IF NOT EXISTS userd (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  username text NOT NULL,
+);
