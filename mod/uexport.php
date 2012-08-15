@@ -114,7 +114,20 @@ function uexport_init(&$a) {
 		bdyear text NOT NULL,
 		bd date NOT NULL
 	);");
-	db->exec("CREATE TABLE IF NOT EXISTS profile (
+	$db->exec("CREATE TABLE IF NOT EXISTS group (
+	  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+	  uid integer NOT NULL,
+	  visible integer NOT NULL DEFAULT '0',
+	  deleted integer NOT NULL DEFAULT '0',
+	  name text NOT NULL
+	);");
+	$db->exec("CREATE TABLE IF NOT EXISTS group_member (
+	  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+	  uid integer NOT NULL,
+	  gid integer NOT NULL,
+	  contact-id integer NOT NULL
+	);");
+	$db->exec("CREATE TABLE IF NOT EXISTS profile (
 		id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		uid integer NOT NULL,
 		profile-name text NOT NULL,
@@ -156,6 +169,103 @@ function uexport_init(&$a) {
 		thumb text NOT NULL,
 		publish integer NOT NULL DEFAULT '0',
 		net-publish integer NOT NULL DEFAULT '0'
+	);");
+	$db->exec("CREATE TABLE IF NOT EXISTS attach (
+	  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+	  uid integer NOT NULL,
+	  hash text NOT NULL,
+	  filename text NOT NULL,
+	  filetype text NOT NULL,
+	  filesize integer NOT NULL,
+	  data blob NOT NULL,
+	  created text NOT NULL DEFAULT '0000-00-00 00:00:00',
+	  edited text NOT NULL DEFAULT '0000-00-00 00:00:00',
+	  allow_cid text NOT NULL,
+	  allow_gid text NOT NULL,
+	  deny_cid text NOT NULL,
+	  deny_gid text NOT NULL
+	);");
+	$db->exec("CREATE TABLE IF NOT EXISTS event (
+	  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+	  uid integer NOT NULL,
+	  cid integer NOT NULL,
+	  uri text NOT NULL,
+	  created text NOT NULL,
+	  edited text NOT NULL,
+	  start text NOT NULL,
+	  finish text NOT NULL,
+	  summary text NOT NULL,
+	  desc text NOT NULL,
+	  location text NOT NULL,
+	  type text NOT NULL,
+	  nofinish integer NOT NULL DEFAULT '0',
+	  adjust integer NOT NULL DEFAULT '1',
+	  allow_cid text NOT NULL,
+	  allow_gid text NOT NULL,
+	  deny_cid text NOT NULL,
+	  deny_gid text NOT NULL
+	);");
+	$db->exec("CREATE TABLE IF NOT EXISTS mail (
+	  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+	  uid integer NOT NULL,
+	  guid text NOT NULL,
+	  from-name text NOT NULL,
+	  from-photo text NOT NULL,
+	  from-url text NOT NULL,
+	  contact-id text NOT NULL,
+	  convid integer NOT NULL,
+	  title text NOT NULL,
+	  body text NOT NULL,
+	  seen integer NOT NULL,
+	  reply integer NOT NULL DEFAULT '0',
+	  replied integer NOT NULL,
+	  unknown integer NOT NULL DEFAULT '0',
+	  uri text NOT NULL,
+	  parent-uri text NOT NULL,
+	  created text NOT NULL DEFAULT '0000-00-00 00:00:00',
+	);");
+	$db->exec("CREATE TABLE IF NOT EXISTS mailacct (
+	  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+	  uid integer NOT NULL,
+	  server text NOT NULL,
+	  port integer NOT NULL,
+	  ssltype text NOT NULL,
+	  mailbox text NOT NULL,
+	  user text NOT NULL,
+	  pass text NOT NULL,
+	  action integer NOT NULL,
+	  movetofolder text NOT NULL,
+	  reply_to text NOT NULL,
+	  pubmail integer NOT NULL DEFAULT '0',
+	  last_check text NOT NULL DEFAULT '0000-00-00 00:00:00',
+	);");
+	$db->exec("CREATE TABLE IF NOT EXISTS photo (
+	  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+	  uid integer NOT NULL,
+	  contact-id integer NOT NULL DEFAULT '0',
+	  guid text NOT NULL,
+	  resource-id text NOT NULL,
+	  created text NOT NULL,
+	  edited text NOT NULL,
+	  title text NOT NULL,
+	  desc text NOT NULL,
+	  album text NOT NULL,
+	  filename text NOT NULL,
+	  type CHAR(128);
+	  height integer NOT NULL,
+	  width integer NOT NULL,
+	  data blob NOT NULL,
+	  scale integer NOT NULL,
+	  profile integer NOT NULL DEFAULT '0',
+	  allow_cid text NOT NULL,
+	  allow_gid text NOT NULL,
+	  deny_cid text NOT NULL,
+	  deny_gid text NOT NULL,
+	);");
+	$db->exec("CREATE TABLE IF NOT EXISTS search (
+	  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+	  uid integer NOT NULL,
+	  term text NOT NULL,
 	);");
 	$db->exec("CREATE TABLE IF NOT EXISTS item (
 		id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -219,15 +329,44 @@ function uexport_init(&$a) {
 
 
 
-	foreach($r as $user_line)
-		$db->exec("INSERT INTO user (" . implode(",", array_keys($user_line)) . ") VALUES (" . implode(",", $user_line) . ");");
+	foreach($r as $line)
+		$db->exec("INSERT INTO user (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
 
-	$r = q("SELECT * FROM `contact` WHERE `uid` = %d ",
+	$tables = array('contact', 'group', 'group_member', 'profile', 'attach', 'event', 'mail', 'mailacct', 'photo', 'search');
+
+	foreach($tables as $table) {
+
+		$r = q("SELECT * FROM " . $table . " WHERE uid = %d ",
+			intval(local_user())
+		);
+		if(count($r)) {
+			foreach($r as $line)
+				$db->exec("INSERT INTO " . $table . " (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
+		}
+	}
+
+/*	$r = q("SELECT * FROM `contact` WHERE `uid` = %d ",
 		intval(local_user())
 	);
 	if(count($r)) {
-		foreach($r as $contact_line)
-			$db->exec("INSERT INTO contact (" . implode(",", array_keys($contact_line)) . ") VALUES (" . implode(",", $contact_line) . ");");
+		foreach($r as $line)
+			$db->exec("INSERT INTO contact (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
+	}
+
+	$r = q("SELECT * FROM group WHERE uid = %d ",
+		intval(local_user())
+	);
+	if(count($r)) {
+		foreach($r as $line)
+			$db->exec("INSERT INTO group (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
+	}
+
+	$r = q("SELECT * FROM group_member WHERE uid = %d ",
+		intval(local_user())
+	);
+	if(count($r)) {
+		foreach($r as $line)
+			$db->exec("INSERT INTO group_member (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
 	}
 
 	$r = q("SELECT * FROM `profile` WHERE `uid` = %d ",
@@ -235,8 +374,8 @@ function uexport_init(&$a) {
 	);
 	if(count($r)) {
 		foreach($r as $profile_line)
-			$db->exec("INSERT INTO profile (" . implode(",", array_keys($profile_line)) . ") VALUES (" . implode(",", $profile_line) . ");");
-	}
+			$db->exec("INSERT INTO profile (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
+	}*/
 
 	$r = q("SELECT count(*) as `total` FROM `item` WHERE `uid` = %d ",
 		intval(local_user())

@@ -173,7 +173,7 @@ CREATE TABLE IF NOT EXISTS contact (
   info text NOT NULL,
   profile-id integer NOT NULL DEFAULT '0',
   bdyear text NOT NULL,
-  bd date NOT NULL,
+  bd text NOT NULL,
 );
 
 -- --------------------------------------------------------
