@@ -342,33 +342,32 @@ function import_user($user, $self_contact, $profiles) {
 	// Required: { username, nickname, email } or { openid_url }
 
 	$a = get_app();
-	$result = array('success' => false, 'user' => null, 'password' => '', 'message' => '');
+	$result = array('success' => false, 'user' => null, 'message' => '');
 
 /*	$using_invites = get_config('system','invitation_only');
 	$num_invites   = get_config('system','number_invites');
 
 
 	$invite_id  = ((x($user,'invite_id'))  ? notags(trim($user['invite_id']))  : '');*/
-	$username   = $user['username']; //((x($user,'username'))   ? notags(trim($user['username']))   : '');
-	$nickname   = $user['nickname']; //((x($user,'nickname'))   ? notags(trim($user['nickname']))   : '');
-	$email      = $user['email']; //((x($user,'email'))      ? notags(trim($user['email']))      : '');
-	$openid_url = $user['openid']; //((x($user,'openid')) ? notags(trim($user['openid_url'])) : '');
+	//$username   = $user['username']; //((x($user,'username'))   ? notags(trim($user['username']))   : '');
+	//$nickname   = $user['nickname']; //((x($user,'nickname'))   ? notags(trim($user['nickname']))   : '');
+	//$email      = $user['email']; //((x($user,'email'))      ? notags(trim($user['email']))      : '');
+	//$openid_url = $user['openid']; //((x($user,'openid')) ? notags(trim($user['openid_url'])) : '');
 //	$photo      = ((x($user,'photo'))      ? notags(trim($user['photo']))      : '');
-	$password   = $user['password']; //((x($user,'password'))   ? trim($user['password'])           : '');
-	$blocked    = 0; //((x($user,'blocked'))    ? intval($user['blocked'])  : 0);
-	$verified   = 0; //((x($user,'verified'))   ? intval($user['verified']) : 0);
-	$timezone   = $user['timezone'];
+//	$password   = $user['password']; //((x($user,'password'))   ? trim($user['password'])           : '');
+//	$blocked    = 0; //((x($user,'blocked'))    ? intval($user['blocked'])  : 0);
+//	$verified   = 0; //((x($user,'verified'))   ? intval($user['verified']) : 0);
+//	$timezone   = $user['timezone'];
 
-	$prvkey = $user['prvkey'];
-	$pubkey = $user['pubkey'];
-	$sprvkey = $user['sprvkey'];
-	$spubkey = $user['spubkey'];
+//	$prvkey = $user['prvkey'];
+//	$pubkey = $user['pubkey'];
+//	$sprvkey = $user['sprvkey'];
+//	$spubkey = $user['spubkey'];
 
 
 //	$publish    = ((x($user,'profile_publish_reg') && intval($user['profile_publish_reg'])) ? 1 : 0);
-	$netpublish = ((strlen(get_config('system','directory_submit_url'))) ? $publish : 0);
-		
-	$tmp_str = $openid_url;
+
+	$tmp_str = $user['openid'];
 
 /*	if($using_invites) {
 		if(! $invite_id) {
@@ -385,8 +384,8 @@ function import_user($user, $self_contact, $profiles) {
 	// START CHECKING FOR ERRORS
 	// XXX NEED A BETTER WAY TO INTERACT IF ERROR IS FOUND
 
-	if((! x($username)) || (! x($email)) || (! x($nickname))) {
-		if($openid_url) {
+	if((! x($user['username'])) || (! x($user['email'])) || (! x($user['nickname']))) {
+		if($user['openid']) {
 			if(! validate_url($tmp_str)) {
 				$result['message'] .= t('Invalid OpenID url') . EOL;
 				return $result;
@@ -410,17 +409,17 @@ function import_user($user, $self_contact, $profiles) {
 	}
 
 	if(! validate_url($tmp_str))
-		$openid_url = '';
+		$user['openid'] = '';
 
 
 	$err = '';
 
 	// collapse multiple spaces in name
-	$username = preg_replace('/ +/',' ',$username);
+	$user['username'] = preg_replace('/ +/',' ',$user['username']);
 
-	if(mb_strlen($username) > 48)
+	if(mb_strlen($user['username']) > 48)
 		$result['message'] .= t('Username is too long.') . EOL;
-	if(mb_strlen($username) < 3)
+	if(mb_strlen($user['username']) < 3)
 		$result['message'] .= t('Username is too short.') . EOL;
 
 	// I don't really like having this rule, but it cuts down
@@ -434,37 +433,37 @@ function import_user($user, $self_contact, $profiles) {
 	
 	$loose_reg = get_config('system','no_regfullname');
 	if(! $loose_reg) {
-		$username = mb_convert_case($username,MB_CASE_TITLE,'UTF-8');
-		if(! strpos($username,' '))
+		$user['username'] = mb_convert_case($user['username'],MB_CASE_TITLE,'UTF-8');
+		if(! strpos($user['username'],' '))
 			$result['message'] .= t("That doesn't appear to be your full \x28First Last\x29 name.") . EOL;
 	}
 
 
-	if(! allowed_email($email))
+	if(! allowed_email($user['email']))
 		$result['message'] .= t('Your email domain is not among those allowed on this site.') . EOL;
 
-	if((! valid_email($email)) || (! validate_email($email)))
+	if((! valid_email($user['email'])) || (! validate_email($user['email'])))
 		$result['message'] .= t('Not a valid email address.') . EOL;
 		
 	// Disallow somebody creating an account using openid that uses the admin email address,
 	// since openid bypasses email verification. We'll allow it if there is not yet an admin account.
 
-	if((x($a->config,'admin_email')) && (strcasecmp($email,$a->config['admin_email']) == 0) && strlen($openid_url)) {
+	if((x($a->config,'admin_email')) && (strcasecmp($user['email'],$a->config['admin_email']) == 0) && strlen($user['openid'])) {
 		$r = q("SELECT * FROM `user` WHERE `email` = '%s' LIMIT 1",
-			dbesc($email)
+			dbesc($user['email'])
 		);
 		if(count($r))
 			$result['message'] .= t('Cannot use that email.') . EOL;
 	}
 
-	$nickname = $user['nickname'] = strtolower($nickname);
+	$user['nickname'] = strtolower($user['nickname']);
 
-	if(! preg_match("/^[a-z][a-z0-9\-\_]*$/",$nickname))
+	if(! preg_match("/^[a-z][a-z0-9\-\_]*$/",$user['nickname']))
 		$result['message'] .= t('Your "nickname" can only contain "a-z", "0-9", "-", and "_", and must also begin with a letter.') . EOL;
 
 	$r = q("SELECT `uid` FROM `user`
                	WHERE `nickname` = '%s' LIMIT 1",
-               	dbesc($nickname)
+               	dbesc($user['nickname'])
 	);
 	if(count($r))
 		$result['message'] .= t('Nickname is already registered. Please choose another.') . EOL;
@@ -474,7 +473,7 @@ function import_user($user, $self_contact, $profiles) {
 
 	$r = q("SELECT * FROM `userd`
                	WHERE `username` = '%s' LIMIT 1",
-               	dbesc($nickname)
+               	dbesc($user['nickname'])
 	);
 	if(count($r))
 		$result['message'] .= t('Nickname was once registered here and may not be re-used. Please choose another.') . EOL;
@@ -489,34 +488,46 @@ function import_user($user, $self_contact, $profiles) {
 	if(! $default_service_class)
 		$default_service_class = '';
 
-	
+	// XXX WHERE DOES 'publish' COME FROM?
+	$netpublish = ((strlen(get_config('system','directory_submit_url'))) ? $publish : 0);
+		
+	unset($user['uid']);
+	unset($user['login_date']);
+	unset($user['theme']);
+
+	$user['guid'] = generate_user_guid();
+	$user['verified'] = 0;
+	$user['blocked'] = 0;
+	$user['register_date'] = datetime_convert();
+	$user['service_class'] = $default_service_class;
+
 	$r = q("INSERT INTO `user` ( guid, username, password, nickname, email, openid,
 		timezone, language, register_date, `default-location`, allow_location,
 		pubkey, prvkey, spubkey, sprvkey, verified, blocked, blockwall, hidewall,
 		blocktags, unkmail, cntunkmail, `notify-flags`, `page-flags`, prvnets, pwdreset,
 		maxreq, expire, account_removed, account_expired, account_expires_on,
 		expire_notification_sent, service_class, def_gid, allow_cid, allow_gid,
-		deny_cid text, deny_gid, openidserver )
+		deny_cid, deny_gid, openidserver )
 		VALUES ( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
 		'%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, '%s', %d,
 		%d, %d, %d, '%s', '%s', '%s', %d, '%s', '%s', '%s', '%s', '%s' )",
 		dbesc(generate_user_guid()),
-		dbesc($username),
-		dbesc($password),
-		dbesc($nickname),
-		dbesc($email),
-		dbesc($openid_url),
-		dbesc($timezone),
+		dbesc($user['username']),
+		dbesc($user['password']),
+		dbesc($user['nickname']),
+		dbesc($user['email']),
+		dbesc($user['openid']),
+		dbesc($user['timezone']),
 		dbesc($user['language']),
 		dbesc(datetime_convert()),
 		dbesc($user['default-location']),
 		dbesc($user['allow_location']),
-		dbesc($pubkey),
-		dbesc($prvkey),
-		dbesc($spubkey),
-		dbesc($sprvkey),
-		intval($verified),
-		intval($blocked),
+		dbesc($user['pubkey']),
+		dbesc($user['prvkey']),
+		dbesc($user['spubkey']),
+		dbesc($user['sprvkey']),
+		intval($user['verified']),
+		intval($user['blocked']),
 		intval($user['blockwall']),
 		intval($user['hidewall']),
 		intval($user['blocktags']),
@@ -544,8 +555,8 @@ function import_user($user, $self_contact, $profiles) {
 	if($r) {
 		$r = q("SELECT * FROM `user` 
 			WHERE `username` = '%s' AND `password` = '%s' LIMIT 1",
-			dbesc($username),
-			dbesc($password)
+			dbesc($user['username']),
+			dbesc($user['password'])
 		);
 		if($r !== false && count($r)) {
 			$u = $r[0];
@@ -564,7 +575,7 @@ function import_user($user, $self_contact, $profiles) {
 
 	$r = q("SELECT `uid` FROM `user`
                	WHERE `nickname` = '%s' ",
-               	dbesc($nickname)
+               	dbesc($user['nickname'])
 	);
 	if((count($r) > 1) && $newuid) {
 		$result['message'] .= t('Please be patient and only submit once.') . EOL;
@@ -647,25 +658,25 @@ function import_user($user, $self_contact, $profiles) {
 			%d, %d, %d, %d, %d, 0, %d, %s, %d, %s, %d, %s, %s ) ",
 			intval($newuid),
 			dbesc(datetime_convert()),
-			dbesc($username),
-			dbesc($nickname),
+			dbesc($user['username']),
+			dbesc($user['nickname']),
 			dbesc($self_contact['attag']),
 			dbesc($a->get_baseurl() . "/photo/profile/{$newuid}.jpg"),
 			dbesc($a->get_baseurl() . "/photo/avatar/{$newuid}.jpg"),
 			dbesc($a->get_baseurl() . "/photo/micro/{$newuid}.jpg"),
 			dbesc($self_contact['issued-id']),
 			dbesc($self_contact['dfrn-id']),
-			dbesc($a->get_baseurl() . "/profile/$nickname"),
-			dbesc(normalise_link($a->get_baseurl() . "/profile/$nickname")),
+			dbesc($a->get_baseurl() . "/profile/$user['nickname']"),
+			dbesc(normalise_link($a->get_baseurl() . "/profile/$user['nickname']")),
 			dbesc($self_contact['alias']),
 			dbesc($self_contact['pubkey']),
 			dbesc($self_contact['prvkey']),
 			dbesc($self_contact['batch']), // XXX CHECK
-			dbesc($a->get_baseurl() . "/dfrn_request/$nickname"),
-			dbesc($a->get_baseurl() . "/dfrn_notify/$nickname"),
-			dbesc($a->get_baseurl() . "/dfrn_poll/$nickname"),
-			dbesc($a->get_baseurl() . "/dfrn_confirm/$nickname"),
-			dbesc($a->get_baseurl() . "/poco/$nickname"),
+			dbesc($a->get_baseurl() . "/dfrn_request/$user['nickname']"),
+			dbesc($a->get_baseurl() . "/dfrn_notify/$user['nickname']"),
+			dbesc($a->get_baseurl() . "/dfrn_poll/$user['nickname']"),
+			dbesc($a->get_baseurl() . "/dfrn_confirm/$user['nickname']"),
+			dbesc($a->get_baseurl() . "/poco/$user['nickname']"),
 			intval($self_contact['aes_allow']),
 			intval($self_contact['ret-aes']),
 			intval($self_contact['usehub']),
@@ -704,7 +715,7 @@ function import_user($user, $self_contact, $profiles) {
 	// XXX IMPORT PROFILE PHOTO
 	// if we have no OpenID photo try to look up an avatar
 	if(! strlen($photo))
-		$photo = avatar_img($email);
+		$photo = avatar_img($user['email']);
 
 	// unless there is no avatar-plugin loaded
 	if(strlen($photo)) {
