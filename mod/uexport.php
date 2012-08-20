@@ -205,6 +205,16 @@ function uexport_init(&$a) {
 	  deny_cid text NOT NULL,
 	  deny_gid text NOT NULL
 	);");
+	$db->exec("CREATE TABLE IF NOT EXISTS conv (
+		id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		guid text NOT NULL,
+		recips text NOT NULL,
+		uid integer NOT NULL,
+		creator text NOT NULL,
+		created text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		updated text NOT NULL DEFAULT '0000-00-00 00:00:00',
+		subject text NOT NULL
+	);");
 	$db->exec("CREATE TABLE IF NOT EXISTS mail (
 	  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 	  uid integer NOT NULL,
@@ -332,50 +342,32 @@ function uexport_init(&$a) {
 	foreach($r as $line)
 		$db->exec("INSERT INTO user (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
 
-	$tables = array('contact', 'group', 'group_member', 'profile', 'attach', 'event', 'mail', 'mailacct', 'photo', 'search');
+	$tables = array('contact', 'group', 'group_member', 'profile', 'attach', 'event', 'conv', 'mail', 'mailacct', 'photo', 'search');
 
 	foreach($tables as $table) {
 
-		$r = q("SELECT * FROM " . $table . " WHERE uid = %d ",
+		$r = q("SELECT count(*) as total FROM " . $table . " WHERE `uid` = %d ",
 			intval(local_user())
 		);
-		if(count($r)) {
-			foreach($r as $line)
-				$db->exec("INSERT INTO " . $table . " (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
+		if(count($r))
+			$total = $r[0]['total'];
+		else
+			$total = 0;
+
+		for($x = 0; $x < $total; $x += 500) {
+			$r = q("SELECT * FROM %s WHERE uid = %d LIMIT %d, %d",
+				$table,
+				intval(local_user()),
+				intval($x),
+				intval(500)
+			);
+			if(count($r)) {
+				foreach($r as $line)
+					$db->exec("INSERT INTO " . $table . " (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
+			}
 		}
 	}
 
-/*	$r = q("SELECT * FROM `contact` WHERE `uid` = %d ",
-		intval(local_user())
-	);
-	if(count($r)) {
-		foreach($r as $line)
-			$db->exec("INSERT INTO contact (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
-	}
-
-	$r = q("SELECT * FROM group WHERE uid = %d ",
-		intval(local_user())
-	);
-	if(count($r)) {
-		foreach($r as $line)
-			$db->exec("INSERT INTO group (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
-	}
-
-	$r = q("SELECT * FROM group_member WHERE uid = %d ",
-		intval(local_user())
-	);
-	if(count($r)) {
-		foreach($r as $line)
-			$db->exec("INSERT INTO group_member (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
-	}
-
-	$r = q("SELECT * FROM `profile` WHERE `uid` = %d ",
-		intval(local_user())
-	);
-	if(count($r)) {
-		foreach($r as $profile_line)
-			$db->exec("INSERT INTO profile (" . implode(",", array_keys($line)) . ") VALUES (" . implode(",", $line) . ");");
-	}*/
 
 	$r = q("SELECT count(*) as `total` FROM `item` WHERE `uid` = %d ",
 		intval(local_user())
@@ -394,8 +386,10 @@ function uexport_init(&$a) {
 			intval(500)
 		);
 		if(count($r)) {
-			foreach($r as $item_line)
-				$db->exec("INSERT INTO item (" . implode(",", array_keys($item_line)) . ") VALUES (" . implode(",", $item_line) . ");");
+			foreach($r as $item_line) {
+				if($item_line['deleted'] !== 1)
+					$db->exec("INSERT INTO item (" . implode(",", array_keys($item_line)) . ") VALUES (" . implode(",", $item_line) . ");");
+			}
 		}
 	}
 
