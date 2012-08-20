@@ -931,6 +931,22 @@ function import_data($dbname, $uid, $contact_map) {
 			                    REPLACE(deny_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'));");
 	}
 
+	// XXX Need to replace all user's old URLS in:
+	//
+	//		owner-link
+	//		owner-avatar
+	//		author-link
+	//		author-avatar
+	//		plink
+	//
+	// XXX Also, in 'body', need to replace:
+	//
+	//		URLS (likes, images, linked images, etc).
+
+
+
+
+
 	// XXX The 'attach' field needs to be modified for the new location
 	// XXX Image locations need to be fixed (in 'body', I think)
 	// XXX Does anything else need to be fixed?
