@@ -12,7 +12,7 @@ require_once('include/follow.php');
 function import_user($dbname) {
 
 	$a = get_app();
-	$result = array('success' => false, 'user' => null, 'message' => '');
+	$result = array('success' => false, 'uid' => null, 'profile_map' => array(), 'message' => array());
 
 
 	$db = new PDO("sqlite:" . $dbname . ";");
@@ -22,7 +22,7 @@ function import_user($dbname) {
 	 ***************************************/
 	$r = $db->query("SELECT * FROM user LIMIT 1;");
 	if(! $r) {
-		$result['message'] .= t('No user information found') . EOL;
+		$result['message'][] = t('No user information found') . EOL;
 
 		$db = NULL;
 		return $result;
@@ -30,13 +30,12 @@ function import_user($dbname) {
 	$user = $r[0];
 
 	// START CHECKING FOR ERRORS
-	// XXX NEED A BETTER WAY TO INTERACT IF ERROR IS FOUND
 
 	$tmp_str = $user['openid'];
 	if((! x($user['username'])) || (! x($user['email'])) || (! x($user['nickname']))) {
 		if($user['openid']) {
 			if(! validate_url($tmp_str)) {
-				$result['message'] .= t('Invalid OpenID url') . EOL;
+				$result['message'][] = t('Invalid OpenID url') . EOL;
 
 				$db = NULL;
 				return $result;
@@ -44,7 +43,7 @@ function import_user($dbname) {
 		}
 		else {
 
-			$result['message'] .= t('User import must have a username, an email, and a nickname.') . EOL;
+			$result['message'][] = t('User import must have a username, an email, and a nickname.') . EOL;
 			return $result;
 		}
 	}
@@ -59,9 +58,9 @@ function import_user($dbname) {
 	$user['username'] = preg_replace('/ +/',' ',$user['username']);
 
 	if(mb_strlen($user['username']) > 48)
-		$result['message'] .= t('Username is too long.') . EOL;
+		$result['message'][] = t('Username is too long.') . EOL;
 	if(mb_strlen($user['username']) < 3)
-		$result['message'] .= t('Username is too short.') . EOL;
+		$result['message'][] = t('Username is too short.') . EOL;
 
 	// I don't really like having this rule, but it cuts down
 	// on the number of auto-registrations by Russian spammers
@@ -76,15 +75,15 @@ function import_user($dbname) {
 	if(! $loose_reg) {
 		$user['username'] = mb_convert_case($user['username'],MB_CASE_TITLE,'UTF-8');
 		if(! strpos($user['username'],' '))
-			$result['message'] .= t("That doesn't appear to be your full \x28First Last\x29 name.") . EOL;
+			$result['message'][] = t("That doesn't appear to be your full \x28First Last\x29 name.") . EOL;
 	}
 
 
 	if(! allowed_email($user['email']))
-		$result['message'] .= t('Your email domain is not among those allowed on this site.') . EOL;
+		$result['message'][] = t('Your email domain is not among those allowed on this site.') . EOL;
 
 	if((! valid_email($user['email'])) || (! validate_email($user['email'])))
-		$result['message'] .= t('Not a valid email address.') . EOL;
+		$result['message'][] = t('Not a valid email address.') . EOL;
 		
 	// Disallow somebody creating an account using openid that uses the admin email address,
 	// since openid bypasses email verification. We'll allow it if there is not yet an admin account.
@@ -94,20 +93,20 @@ function import_user($dbname) {
 			dbesc($user['email'])
 		);
 		if(count($r))
-			$result['message'] .= t('Cannot use that email.') . EOL;
+			$result['message'][] = t('Cannot use that email.') . EOL;
 	}
 
 	$user['nickname'] = strtolower($user['nickname']);
 
 	if(! preg_match("/^[a-z][a-z0-9\-\_]*$/",$user['nickname']))
-		$result['message'] .= t('Your "nickname" can only contain "a-z", "0-9", "-", and "_", and must also begin with a letter.') . EOL;
+		$result['message'][] = t('Your "nickname" can only contain "a-z", "0-9", "-", and "_", and must also begin with a letter.') . EOL;
 
 	$r = q("SELECT `uid` FROM `user`
                	WHERE `nickname` = '%s' LIMIT 1",
                	dbesc($user['nickname'])
 	);
 	if(count($r))
-		$result['message'] .= t('Nickname is already registered. Please choose another.') . EOL;
+		$result['message'][] = t('Nickname is already registered. Please choose another.') . EOL;
 
 	// Check deleted accounts that had this nickname. Doesn't matter to us,
 	// but could be a security issue for federated platforms.
@@ -117,9 +116,9 @@ function import_user($dbname) {
                	dbesc($user['nickname'])
 	);
 	if(count($r))
-		$result['message'] .= t('Nickname was once registered here and may not be re-used. Please choose another.') . EOL;
+		$result['message'][] = t('Nickname was once registered here and may not be re-used. Please choose another.') . EOL;
 
-	if(strlen($result['message'])) {
+	if(count($result['message'])) {
 		$db = NULL;
 		return $result;
 	}
@@ -199,18 +198,17 @@ function import_user($dbname) {
 	);
 
 	if($r) {
-		$r = q("SELECT * FROM `user` 
+		$r = q("SELECT uid FROM `user` 
 			WHERE `username` = '%s' AND `password` = '%s' LIMIT 1",
 			dbesc($user['username']),
 			dbesc($user['password'])
 		);
 		if($r !== false && count($r)) {
-			$u = $r[0];
 			$newuid = intval($r[0]['uid']);
 		}
 	}
 	else {
-		$result['message'] .=  t('An error occurred during user import. Please try again.') . EOL ;
+		$result['message'][] =  t('An error occurred during user import. Please try again.') . EOL ;
 
 		$db = NULL;
 		return $result;
@@ -226,13 +224,15 @@ function import_user($dbname) {
                	dbesc($user['nickname'])
 	);
 	if((count($r) > 1) && $newuid) {
-		$result['message'] .= t('Please be patient and only submit once.') . EOL;
+//		$result['message'][] = t('Please be patient and only submit once.') . EOL;
+		notice(t('Please be patient and only submit once.') . EOL);
 		q("DELETE FROM `user` WHERE `uid` = %d LIMIT 1",
 			intval($newuid)
 		);
 
 		$db = NULL;
-		return $result;
+//		return $result;
+		killme();
 	}
 
 
@@ -241,6 +241,7 @@ function import_user($dbname) {
 		 *         IMPORT PROFILE TABLE        *
 		 ***************************************/
 		$profiles = $db->query("SELECT * FROM profile;");
+		$profile_map = array();
 		foreach($profiles as $profile) {
 			$netpublish = ((strlen(get_config('system','directory_submit_url'))) ? $profile['publish'] : 0);
 
@@ -294,7 +295,7 @@ function import_user($dbname) {
 				intval($netpublish)
 			);
 			if($r === false) {
-				$result['message'] .=  t('An error occurred importing your profile "' . $profile['profile-name'] . '". Please try again.') . EOL;
+				$result['message'][] =  t('An error occurred importing your profile "' . $profile['profile-name'] . '". Please try again.') . EOL;
 				// Start fresh next time.
 				$r = q("DELETE FROM `user` WHERE `uid` = %d",
 					intval($newuid));
@@ -305,7 +306,15 @@ function import_user($dbname) {
 				return $result;
 			}
 
-			// make $profile_map using NOT IN (,,,,) query
+			$r = q("SELECT id FROM profile WHERE uid = %d AND id NOT IN (" . implode(",", $profile_map) . ") LIMIT 1",
+			        intval($uid)
+			);
+			if($r) {
+				$profile_map[$profile['id']] = $r[0]['id'];
+			}
+			else {
+				$result['message'][] =  t('Profile "' . $profile['profile-name'] . '" didn\'t make it into the Friendica database.') . EOL;
+			}			
 		}
 		// Should probably create a default profile if none are found
 
@@ -316,7 +325,7 @@ function import_user($dbname) {
 		 ***************************************/
 		$r = $db->query("SELECT * FROM CONTACT WHERE self = 1 LIMIT 1;");
 		if(! $r) {
-			$result['message'] .= t("Couldn't find self contact information") . EOL;
+			$result['message'][] = t("Couldn't find self contact information") . EOL;
 			// Start fresh next time.
 			// It'd be better to just create a default self-contact
 			$r = q("DELETE FROM `user` WHERE `uid` = %d",
@@ -442,7 +451,8 @@ function import_user($dbname) {
 	call_hooks('register_account', $newuid);
 
 	$result['success'] = true;
-	$result['user'] = $u;
+	$result['profile_map'] = $profile_map;
+	$result['uid'] = $newuid;
 	return $result;
 
 }
@@ -455,7 +465,7 @@ function import_user($dbname) {
 function import_contacts($dbname, $uid, $profile_map) {
 
 //	$a = get_app();
-	$result = array('success' => false, 'message' => '', 'contact_map' => array(), 'manual_contacts' => array(), 'manual_text' => '');
+	$result = array('success' => false, 'message' => '', 'contact_map' => array(), 'manual_contacts' => array());
 
 
 	$db = new PDO("sqlite:" . $dbname . ";");
@@ -512,18 +522,19 @@ function import_contacts($dbname, $uid, $profile_map) {
 		);
 	}
 
-	$r = $db->query("SELECT id, name, nick, request, network, addr, url, blocked, readonly, hidden, archive,
-	                 info, `profile-id` FROM contact WHERE self = 0 AND network = '" . NETWORK_DFRN . "';");
+//	$r = $db->query("SELECT id, name, nick, request, network, addr, url, blocked, readonly, hidden, archive,
+//	                 info, `profile-id` FROM contact WHERE self = 0 AND network = '" . NETWORK_DFRN . "';");
+	$r = $db->query("SELECT id, name, nick, request FROM contact WHERE self = 0 AND network = '" . NETWORK_DFRN . "';");
 	if($r) {
 
-		$manual_contacts = $r;
-		$result['manual_text'] = "The following contacts could not be added automatically. Please follow the links to add each contact:" . EOL;
+		//$manual_contacts = $r;
+/*		$result['manual_text'] = "The following contacts could not be added automatically. Please follow the links to add each contact:" . EOL;
 		foreach($manual_contacts as $dfrn_contact) {
 			$name = ($dfrn_contact['name'] === '' ? $dfrn_contact['nick'] : $dfrn_contact['name']);
 			$result['manual_text'] .= '<a href="' . $dfrn_contact['request'] . '">' . $name . '</a>' . EOL;
-		}
+		}*/
 
-		$result['manual_contacts'] = $manual_contacts;
+		$result['manual_contacts'] = $r;
 	}
 
 	$db = NULL;
@@ -576,6 +587,7 @@ function finish_import_contacts($dbname, $uid, $profile_map, $contact_map, $manu
 
 function import_data($dbname, $uid, $contact_map) {
 
+	$a = get_app();
 	$result = array('success' => false, 'message' => '');
 
 
@@ -753,6 +765,7 @@ function import_data($dbname, $uid, $contact_map) {
 			);
 			if($r) {
 				$photo_map[$photo[0]['id']] = $r[0]['id'];
+				if(! in_array($photo[0]['resource-id'], $photo_res)) $photo_res[] = $photo[0]['resource-id'];
 			}
 			else {
 				$result['message'] .= "Problem importing photo " . $photo[0]['filename'] . EOL;
@@ -787,9 +800,6 @@ function import_data($dbname, $uid, $contact_map) {
 	else
 		$total = 0;
 
-	// Keep the URI from the old hub. That way there's no chance
-	// of the URI conflicting with any existing URIs on the
-	// new hub
 
 	for($x = 0; $x < $total; $x += 500) {
 		$r = $db->query("SELECT * FROM event LIMIT " . intval($x) . ", 500;");
@@ -817,6 +827,106 @@ function import_data($dbname, $uid, $contact_map) {
 				        dbesc($event['deny_cid']),
 				        dbesc($event['deny_gid'])
 				);
+
+				$r = q("SELECT id FROM event WHERE uid = %d AND uri = '%s' LIMIT 1",
+					    intval($uid),
+					    dbesc($event['uri'])
+				);
+				if($r) {
+					$event_map[$event['id']] = $r[0]['id'];
+				}
+				else {
+					$result['message'] .= "Problem importing event " . $event['summary'] . EOL;
+				}
+			}
+		}
+	}
+
+
+	/*************************************************
+	 * GET IMPORTED USER OLD AND NEW CONTACT INFO
+	 *************************************************/
+	$r = $db->query("SELECT url, nick, thumb FROM contact WHERE self = 1");
+	if(! $r) {
+		result['message'] .= "Couldn't find self record in imported database" . EOL;
+
+		$db = NULL;
+		return $result;
+	}
+	$old_url = $r[0]['url'];
+	$pos = strpos($old_url, "://");
+	if($pos !== false) {
+		$old_url = substr($old_url, $pos + 3);
+	}
+	$pos = strpos($old_url, "/profile");
+	if($pos === false) {
+		throw new Exception("Imported database corrupted with author url = " . $old_url);
+	}
+	$old_baseurl = substr($old_url, 0, $pos);
+
+	$old_avatar = $r[0]['thumb'];
+	$pos = strpos($old_avatar, "://");
+	if($pos !== false) {
+		$old_avatar = substr($old_avatar, $pos + 3);
+	}
+
+	$old_nick = $r[0]['nick'];
+
+
+	$r = q("SELECT url, nick, thumb FROM contact WHERE uid = %d AND self = 1",
+	        intval($uid)
+	);
+	if(! $r) {
+		result['message'] .= "Couldn't find self record in database" . EOL;
+
+		$db = NULL;
+		return $result;
+	}
+	$new_url = $r[0]['url'];
+	$baseurl = $a->get_baseurl();
+	$nick = $r[0]['nick'];
+	$avatar = $r[0]['thumb'];
+
+	/***************************************
+	 *             IMPORT CONV             *
+	 ***************************************/
+
+	$old_addr = $old_nick . "@" . $old_baseurl;
+
+	$baseurl_strip = $baseurl;
+	$pos = strpos($baseurl, "://");
+	if($pos !== false) {
+		$baseurl_strip = substr($baseurl, $pos + 3);
+	}
+	$new_addr = $nick . "@" . $baseurl_strip;
+
+
+	$r = $db->exec("UPDATE conv SET recips = REPLACE(recips, '" . $old_addr . "', '" . $new_addr . "');");
+	$r = $db->exec("UPDATE conv SET creator = '" . $new_addr . "' WHERE creator = '" . $old_addr . "';");
+
+	$r = $db->query("SELECT * FROM conv;");
+	if($r) {
+		foreach($r as $conv) {
+			$r = q("INSERT INTO conv ( guid, recips, uid, creator, created, updated, subject )
+			        VALUES ( '%s', '%s', %d, '%s', '%s', '%s', '%s')",
+			        dbesc($conv['guid']),
+			        dbesc($conv['recips']),
+			        intval($uid),
+			        dbesc($conv['creator']),
+			        dbesc($conv['created']),
+			        dbesc($conv['updated']),
+			        dbesc($conv['subject'])
+			);
+
+			$r = q("SELECT id FROM conv WHERE uid = %d AND guid = '%s' LIMIT 1",
+			        intval($uid),
+			        dbesc($conv['guid'])
+			);
+			if($r) {
+				$conv_map[$conv['id']] = $r[0]['id'];
+			}
+			else {
+				$result['message'] .= "Problem importing conv " . $conv['subject'] . EOL;
 			}
 		}
 	}
@@ -825,8 +935,6 @@ function import_data($dbname, $uid, $contact_map) {
 	/***************************************
 	 *             IMPORT MAIL             *
 	 ***************************************/
-
-	// XXX NEED TO DO SOMETHING WITH THE conv TABLE AND CREATE conv_map
 
 	// Chunk the mail table to avoid exhausting memory.
 	// Probably not necessary, but it's good to cover your
@@ -838,9 +946,6 @@ function import_data($dbname, $uid, $contact_map) {
 	else
 		$total = 0;
 
-	// Keep the URI from the old hub. That way there's no chance
-	// of the URI conflicting with any existing URIs on the
-	// new hub
 
 	for($x = 0; $x < $total; $x += 500) {
 		$r = $db->query("SELECT * FROM mail LIMIT " . intval($x) . ", 500;");
@@ -855,10 +960,10 @@ function import_data($dbname, $uid, $contact_map) {
 				        dbesc($mail['from-name']),
 				        dbesc($mail['from-photo']),
 				        dbesc($mail['from-url']),
-				        dbesc($contact_map[intval($mail['contact-id'])]), // XXX Why isn't this an integer in the DB?
+				        dbesc($contact_map[intval($mail['contact-id'])]),
 						intval($conv_map[$mail['convid']]),
 				        dbesc($mail['title']),
-				        dbesc($mail['body']),
+				        dbesc(strip_tags($mail['body'])),
 						intval($mail['seen']),
 						intval($mail['reply']),
 						intval($mail['replied']),
@@ -931,25 +1036,50 @@ function import_data($dbname, $uid, $contact_map) {
 			                    REPLACE(deny_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'));");
 	}
 
-	// XXX Need to replace all user's old URLS in:
-	//
-	//		owner-link
-	//		owner-avatar
-	//		author-link
-	//		author-avatar
-	//		plink
-	//
-	// XXX Also, in 'body', need to replace:
-	//
-	//		URLS (likes, images, linked images, etc).
+
+	$r = $db->exec("UPDATE item SET owner-link = '" . $new_url . "' WHERE owner-link LIKE '%" . $old_url . "';");
+	$r = $db->exec("UPDATE item SET author-link = '" . $new_url . "' WHERE author-link LIKE '%" . $old_url . "';");
+
+	$r = $db->exec("UPDATE item SET owner-avatar = '" . $avatar . "' WHERE owner-avatar LIKE '%" . $old_avatar . "';");
+	$r = $db->exec("UPDATE item SET author-avatar = '" . $avatar . "' WHERE author-avatar LIKE '%" . $old_avatar . "';");
 
 
+	$old_attaches = array_keys($attach_map);
+	foreach($old_attaches as $old_attach) {
+		$query_str = "UPDATE item SET attach = REPLACE(attach, 'http://" . $old_baseurl . "/attach/" . $old_attach . "', '";
+		$query_str .= $baseurl . "/attach/" . $attach_map[$old_attach] . "')";
+		$query_str .= " WHERE attach LIKE '%http://" . $old_baseurl . "/attach/" . $old_attach . "%';";
+		$r = $db->exec($query_str);
 
+		$query_str = "UPDATE item SET attach = REPLACE(attach, 'https://" . $old_baseurl . "/attach/" . $old_attach . "', '";
+		$query_str .= $baseurl . "/attach/" . $attach_map[$old_attach] . "')";
+		$query_str .= " WHERE attach LIKE '%https://" . $old_baseurl . "/attach/" . $old_attach . "%';";
+		$r = $db->exec($query_str);
+	}
 
+	$r = $db->exec("UPDATE item SET object = REPLACE(object, 'http://" . $old_url . "', '" . $new_url . "') WHERE object like '%http://" . $old_url . "%';");
+	$r = $db->exec("UPDATE item SET object = REPLACE(object, 'https://" . $old_url . "', '" . $new_url . "') WHERE object like '%https://" . $old_url . "%';");
 
-	// XXX The 'attach' field needs to be modified for the new location
-	// XXX Image locations need to be fixed (in 'body', I think)
-	// XXX Does anything else need to be fixed?
+	$r = $db->exec("UPDATE item SET body = REPLACE(body, 'http://" . $old_url . "', '" . $new_url . "') WHERE body like '%http://" . $old_url . "%';");
+	$r = $db->exec("UPDATE item SET body = REPLACE(body, 'https://" . $old_url . "', '" . $new_url . "') WHERE body like '%https://" . $old_url . "%';");
+
+	$old_photo = str_replace('profile', 'photos', $old_url);
+	$new_photo = str_replace('profile', 'photos', $new_url);
+	$r = $db->exec("UPDATE item SET body = REPLACE(body, 'http://" . $old_photo . "', '" . $new_photo . "') WHERE body like '%http://" . $old_photo . "%';");
+	$r = $db->exec("UPDATE item SET body = REPLACE(body, 'https://" . $old_photo . "', '" . $new_photo . "') WHERE body like '%https://" . $old_photo . "%';");
+
+	foreach($photo_res as $res) {
+		$query_str = "UPDATE item SET body = REPLACE(body, 'http://" . $old_baseurl . "/photo/" . $res . "', '";
+		$query_str .= $baseurl . "/photo/" . $res . "')";
+		$query_str .= " WHERE body LIKE '%http://" . $old_baseurl . "/photo/" . $res . "%';";
+		$r = $db->exec($query_str);
+
+		$query_str = "UPDATE item SET body = REPLACE(body, 'https://" . $old_baseurl . "/photo/" . $res . "', '";
+		$query_str .= $baseurl . "/photo/" . $res . "')";
+		$query_str .= " WHERE body LIKE '%https://" . $old_baseurl . "/photo/" . $res . "%';";
+		$r = $db->exec($query_str);
+	}
+
 
 	// Chunk the item table to avoid exhausting memory.
 
@@ -959,9 +1089,6 @@ function import_data($dbname, $uid, $contact_map) {
 	else
 		$total = 0;
 
-	// Keep the URI from the old hub. That way there's no chance
-	// of the URI conflicting with any existing URIs on the
-	// new hub
 
 	for($x = 0; $x < $total; $x += 500) {
 		$r = $db->query("SELECT * FROM item LIMIT " . intval($x) . ", 500;");
@@ -971,13 +1098,13 @@ function import_data($dbname, $uid, $contact_map) {
 				        parent, `parent-uri`, extid, `thr-parent`, created, edited, commented,
 				        received, changed, `owner-name`, `owner-link`, `owner-avatar`, `author-name`,
 				        `author-link`, `author-avatar`, title, body, app, verb, `object-type`, object,
-				        `target-type`, target, postops, plink, `resource-id`, `event-id`, tag, attach,
+				        `target-type`, target, postops, `resource-id`, `event-id`, tag, attach,
 				        inform, file, location, coord, allow_cid, allow_gid, deny_cid, deny_gid,
 				        private, pubmail, moderated, visible, spam, starred, bookmark, unseen, deleted,
 				        origin, forum_mode, `last-child` )
 				        VALUES ( '%s', '%s', %d, %d, '%s', %d, %d, %d, '%s', '%s', '%s', '%s', '%s', '%s',
 				        '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
-				        '%s', '%s', '%s', '%s', '%s', %d,  '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
+				        '%s', '%s', '%s', '%s', %d,  '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
 				        '%s', '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d )",
 				        dbesc($item['guid']),
 				        dbesc($item['uri']),
@@ -996,13 +1123,13 @@ function import_data($dbname, $uid, $contact_map) {
 				        dbesc($item['received']),
 				        dbesc($item['changed']),
 				        dbesc($item['owner-name']),
-				        dbesc($item['owner-link']), // XXX Does this need to be changed?
-				        dbesc($item['owner-avatar']), // XXX Does this need to be changed?
+				        dbesc($item['owner-link']),
+				        dbesc($item['owner-avatar']),
 				        dbesc($item['author-name']),
-				        dbesc($item['author-link']), // XXX Does this need to be changed?
-				        dbesc($item['author-avatar']), // XXX Does this need to be changed?
+				        dbesc($item['author-link']),
+				        dbesc($item['author-avatar']),
 				        dbesc($item['title']),
-				        dbesc($item['body']),
+				        dbesc(strip_tags($item['body'])),
 				        dbesc($item['app']),
 				        dbesc($item['verb']),
 				        dbesc($item['object-type']),
@@ -1010,11 +1137,10 @@ function import_data($dbname, $uid, $contact_map) {
 				        dbesc($item['target-type']),
 				        dbesc($item['target']),
 				        dbesc($item['postops']),
-				        dbesc($item['plink']), // XXX Does this need to be changed?
-				        dbesc($item['resource-id']), // XXX DOES THIS NEED TO BE MAPPED?
-				        dbesc($item['event-id']), // XXX DOES THIS NEED TO BE MAPPED?
-				        dbesc($item['tag']), // XXX Does this need to be changed?
-				        dbesc($item['attach']), // XXX Does this need to be changed?
+				        dbesc($item['resource-id']),
+				        dbesc($event_map[$item['event-id']]),
+				        dbesc($item['tag']),
+				        dbesc($item['attach']),
 				        dbesc($item['inform']),
 				        dbesc($item['file']),
 				        dbesc($item['location']),
@@ -1035,6 +1161,22 @@ function import_data($dbname, $uid, $contact_map) {
 				        intval($item['origin']),
 				        intval($item['forum_mode']),
 				        intval($item['last-child'])
+				);
+
+				$r = q("SELECT id FROM item WHERE uid = %d AND uri = '%s'",
+				       intval($uid),
+				       dbesc($item['uri'])
+				);
+				if(! $r)
+					continue;
+
+				$new_id = $r[0]['id'];
+				$item_map[$item['id']] = $new_id;
+				$r = q("UPDATE item SET plink = %s/display/%s/%d WHERE id = %d",
+				        $a->get_baseurl(),
+				        $nick,
+				        $new_id,
+				        $new_id      
 				);
 			}
 		}

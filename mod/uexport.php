@@ -11,7 +11,8 @@ function uexport_init(&$a) {
 	if(! count($r))
 		killme();
 
-	$db = new PDO("sqlite:" . $r['nickname'] . ".sqlite;");
+	$filename = "/" . $r['nickname'] . ".sqlite";
+	$db = new PDO("sqlite:" . $filename . ";");
 	$db->exec("CREATE TABLE IF NOT EXISTS user (
 		uid integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		guid text NOT NULL,
@@ -396,17 +397,17 @@ function uexport_init(&$a) {
 	$db = NULL;
 
 	header('Content-Type: application/octet-stream');
-	header('Content-Disposition: attachment; filename="'.basename(XXXFILEXXX).'"');
+	header('Content-Disposition: attachment; filename="'.basename($filename).'"');
 	header('Content-Transfer-Encoding: binary');
-	header('Content-Length: '.filesize(XXXFILEPATHXXX));
+	header('Content-Length: '.filesize($filename));
 	header('Expires: 0');
 
-#	$handle = fopen(XXXFILEPATHXXX, 'rb');
+#	$handle = fopen($filename, 'rb');
 #	fpassthru($handle);
 #	fclose($handle);
 	ob_clean();
     flush();	
-	readfile(XXXFILEPATHXXX);
+	readfile($filename);
 
 
 /*	$user = array();
