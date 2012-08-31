@@ -510,8 +510,8 @@ function import_contacts($dbname, $uid, $profile_map) {
 		$newcontact = $r[0];
 		$contact_map[$contact['id']] = $newcontact['id'];
 
-		$r = q("UPDATE contact SET blocked, readonly, hidden, archive, info, `profile-id`
-		        VALUES (%d, %d, %d, %d, %s, %d) WHERE id = %d",
+		$r = q("UPDATE contact SET blocked = %d, readonly = %d, hidden = %d, archive = %d, info = '%s', `profile-id` = %d
+		        WHERE id = %d",
 		        intval($contact['blocked']),
 		        intval($contact['readonly']),
 		        intval($contact['hidden']),
@@ -566,8 +566,8 @@ function finish_import_contacts($dbname, $uid, $profile_map, $contact_map, $manu
 		$newcontact = $r[0];
 		$contact_map[$contact['id']] = $newcontact['id'];
 
-		$r = q("UPDATE contact SET blocked, readonly, hidden, archive, info, `profile-id`
-		        VALUES (%d, %d, %d, %d, %s, %d) WHERE id = %d",
+		$r = q("UPDATE contact SET blocked = %d, readonly = %d, hidden = %d, archive = %d, info = '%s', `profile-id` = %d
+		        WHERE id = %d",
 		        intval($contact['blocked']),
 		        intval($contact['readonly']),
 		        intval($contact['hidden']),
@@ -658,9 +658,8 @@ function import_data($dbname, $uid, $contact_map) {
 	// possible memory issues with importing everything at once
 	$old_cids = array_keys($contact_map);
 	foreach($old_cids as $old_cid) {
-		$r = $db->exec("UPDATE attach SET allow_cid, deny_cid
-			            VALUES (REPLACE(allow_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">'),
-			                    REPLACE(deny_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">'));");
+		$r = $db->exec("UPDATE attach SET allow_cid = REPLACE(allow_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">'),
+		                deny_cid = REPLACE(deny_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">');");
 	}
 
 	// What should we do if group_map is empty? It's possible that the user has no
@@ -668,9 +667,8 @@ function import_data($dbname, $uid, $contact_map) {
 	// groups?
 	$old_gids = array_keys($group_map);
 	foreach($old_gids as $old_gid) {
-		$r = $db->exec("UPDATE attach SET allow_gid, deny_gid
-			            VALUES (REPLACE(allow_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'),
-			                    REPLACE(deny_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'));");
+		$r = $db->exec("UPDATE attach SET allow_gid = REPLACE(allow_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'),
+		                deny_gid = REPLACE(deny_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">');");
 	}
 
 	// Attachments can be large, so let's only import one at a time from the DB
@@ -716,15 +714,13 @@ function import_data($dbname, $uid, $contact_map) {
 	 ***************************************/
 
 	foreach($old_cids as $old_cid) {
-		$r = $db->exec("UPDATE photo SET allow_cid, deny_cid
-			            VALUES (REPLACE(allow_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">'),
-			                    REPLACE(deny_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">'));");
+		$r = $db->exec("UPDATE photo SET allow_cid REPLACE(allow_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">'),
+		                deny_cid = REPLACE(deny_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">');");
 	}
 
 	foreach($old_gids as $old_gid) {
-		$r = $db->exec("UPDATE photo SET allow_gid, deny_gid
-			            VALUES (REPLACE(allow_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'),
-			                    REPLACE(deny_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'));");
+		$r = $db->exec("UPDATE photo SET allow_gid = REPLACE(allow_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'),
+		                deny_gid = REPLACE(deny_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">');");
 	}
 
 	// Photos can be large, so let's only import one at a time from the DB
@@ -779,15 +775,13 @@ function import_data($dbname, $uid, $contact_map) {
 	 ***************************************/
 
 	foreach($old_cids as $old_cid) {
-		$r = $db->exec("UPDATE event SET allow_cid, deny_cid
-			            VALUES (REPLACE(allow_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">'),
-			                    REPLACE(deny_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">'));");
+		$r = $db->exec("UPDATE event SET allow_cid = REPLACE(allow_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">'),
+		                deny_cid = REPLACE(deny_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">');");
 	}
 
 	foreach($old_gids as $old_gid) {
-		$r = $db->exec("UPDATE event SET allow_gid, deny_gid
-			            VALUES (REPLACE(allow_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'),
-			                    REPLACE(deny_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'));");
+		$r = $db->exec("UPDATE event SET allow_gid = REPLACE(allow_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'),
+		                deny_gid = REPLACE(deny_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">');");
 	}
 
 	// Chunk the events table to avoid exhausting memory.
@@ -1025,15 +1019,13 @@ function import_data($dbname, $uid, $contact_map) {
 	 ***************************************/
 
 	foreach($old_cids as $old_cid) {
-		$r = $db->exec("UPDATE item SET allow_cid, deny_cid
-			            VALUES (REPLACE(allow_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">'),
-			                    REPLACE(deny_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">'));");
+		$r = $db->exec("UPDATE item SET allow_cid = REPLACE(allow_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">'),
+		                deny_cid = REPLACE(deny_cid, '<" . $old_cid . ">', '<" . $contact_map[$old_cid] . ">');");
 	}
 
 	foreach($old_gids as $old_gid) {
-		$r = $db->exec("UPDATE item SET allow_gid, deny_gid
-			            VALUES (REPLACE(allow_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'),
-			                    REPLACE(deny_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'));");
+		$r = $db->exec("UPDATE item SET allow_gid = REPLACE(allow_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">'),
+		                deny_gid = REPLACE(deny_gid, '<" . $old_gid . ">', '<" . $group_map[$old_gid] . ">');");
 	}
 
 
