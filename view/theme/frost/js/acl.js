@@ -158,7 +158,8 @@ ACL.prototype.update_view = function(){
 			/* jot acl */
 				$j('#jot-perms-icon').removeClass('lock').addClass('unlock');
 				$j('#jot-public').show();
-				$j('.profile-jot-net input').attr('disabled', false);			
+				//$j('.profile-jot-net input').attr('disabled', false);			
+				$j('.profile-jot-pub-control').attr('disabled', false);			
 				if(typeof editor != 'undefined' && editor != false) {
 					$j('#profile-jot-desc').html(ispublic);
 				}
@@ -168,7 +169,8 @@ ACL.prototype.update_view = function(){
 			/* jot acl */
 				$j('#jot-perms-icon').removeClass('unlock').addClass('lock');
 				$j('#jot-public').hide();
-				$j('.profile-jot-net input').attr('disabled', 'disabled');			
+				//$j('.profile-jot-net input').attr('disabled', 'disabled');			
+				$j('.profile-jot-pub-control').attr('disabled', 'disabled');			
 				$j('#profile-jot-desc').html('&nbsp;');
 	}
 	$j("#acl-list-content .acl-list-item").each(function(){
