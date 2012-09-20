@@ -79,7 +79,7 @@ ACPopup.prototype._search = function(){
 			if (data.tot>0){
 				that.cont.show();
 				$j(data.items).each(function(){
-					html = "<img src='{0}' height='16px' width='16px'>{1} ({2})".format(this.photo, this.name, this.nick)
+					html = "<img src='{0}' height='16px' width='16px'>{1} ({2}) [{3}]".format(this.photo, this.name, this.nick, this.networkName)
 						that.add(html, this.nick.replace(' ','') + '+' + this.id + ' - ' + this.link);
 				});			
 			} else {

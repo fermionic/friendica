@@ -1982,6 +1982,39 @@ function curPageURL() {
 	return $pageURL;
 }
 
+function network_name($network) {
+	switch($network) {
+		case NETWORK_DFRN:
+			return 'Friendica';
+		case NETWORK_ZOT:
+			return 'Zot!';
+		case NETWORK_OSTATUS:
+			return 'OStatus';
+		case NETWORK_FEED:
+			return 'Atom';
+		case NETWORK_DIASPORA:
+			return 'Diaspora';
+		case NETWORK_MAIL:
+			return 'Email';
+		case NETWORK_MAIL2:
+			return 'Email';
+		case NETWORK_FACEBOOK:
+			return 'Facebook';
+		case NETWORK_LINKEDIN:
+			return 'LinkedIn';
+		case NETWORK_XMPP:
+			return 'XMPP';
+		case NETWORK_MYSPACE:
+			return 'MySpace';
+		case NETWORK_GPLUS:
+			return 'Google+';
+		default:
+			return 'Unknown';
+
+	}
+}
+
+
 function random_digits($digits) {
 	$rn = '';
 	for($i = 0; $i < $digits; $i++) {
