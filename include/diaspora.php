@@ -2320,12 +2320,12 @@ function diaspora_send_followup($item,$owner,$contact,$public_batch = false) {
 //	$theiraddr = $contact['addr'];
 
 	// Diaspora doesn't support threaded comments
-	/*if($item['thr-parent']) {
+	if($item['verb'] === ACTIVITY_LIKE && $item['thr-parent']) {
 		$p = q("select guid, type, uri, `parent-uri` from item where uri = '%s' limit 1",
 		        dbesc($item['thr-parent'])
 		      );
 	}
-	else {*/
+	else {
 		// The first item in the `item` table with the parent id is the parent. However, MySQL doesn't always
 		// return the items ordered by `item`.`id`, in which case the wrong item is chosen as the parent.
 		// The only item with `parent` and `id` as the parent id is the parent item.
@@ -2333,7 +2333,7 @@ function diaspora_send_followup($item,$owner,$contact,$public_batch = false) {
 			intval($item['parent']),
 			intval($item['parent'])
 		);
-	//}
+	}
 	if(count($p))
 		$parent = $p[0];
 	else
@@ -2396,12 +2396,12 @@ function diaspora_send_relay($item,$owner,$contact,$public_batch = false) {
 	$text = html_entity_decode(bb2diaspora($body));
 
 	// Diaspora doesn't support threaded comments
-	/*if($item['thr-parent']) {
+	if($item['verb'] === ACTIVITY_LIKE && $item['thr-parent']) {
 		$p = q("select guid, type, uri, `parent-uri` from item where uri = '%s' limit 1",
 		        dbesc($item['thr-parent'])
 		      );
 	}
-	else {*/
+	else {
 		// The first item in the `item` table with the parent id is the parent. However, MySQL doesn't always
 		// return the items ordered by `item`.`id`, in which case the wrong item is chosen as the parent.
 		// The only item with `parent` and `id` as the parent id is the parent item.
@@ -2409,7 +2409,7 @@ function diaspora_send_relay($item,$owner,$contact,$public_batch = false) {
 		       intval($item['parent']),
 		       intval($item['parent'])
 		      );
-	//}
+	}
 	if(count($p))
 		$parent = $p[0];
 	else

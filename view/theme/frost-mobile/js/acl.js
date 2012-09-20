@@ -250,7 +250,12 @@ ACL.prototype.populate = function(data){
 	that.list_content.height(height);*/
 	$j(data.items).each(function(){
 		html = "<div class='acl-list-item {4} {5}' title='{6}' id='{2}{3}'>"+that.item_tpl+"</div>";
-		html = html.format( this.photo, this.name, this.type, this.id, '', this.network, this.link );
+		if(typeof this.networkName == "undefined") {
+			var netName = '';
+		} else {
+			var netName = ' [' + this.networkName + ']';
+		}
+		html = html.format( this.photo, this.name, this.type, this.id, '', this.network, this.link, netName );
 		if (this.uids!=undefined) that.group_uids[this.id] = this.uids;
 		//console.log(html);
 		that.list_content.append(html);

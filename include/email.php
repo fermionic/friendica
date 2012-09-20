@@ -21,7 +21,7 @@ function email_poll($mbox,$email_addr) {
 	if(! $search1)
 		$search1 = array();
 
-	$search2 = @imap_search($mbox,'TO "' . $email_addr . '"', SE_UID);
+/*	$search2 = @imap_search($mbox,'TO "' . $email_addr . '"', SE_UID);
 	if(! $search2)
 		$search2 = array();
 
@@ -33,7 +33,8 @@ function email_poll($mbox,$email_addr) {
 	if(! $search4)
 		$search4 = array();
 
-	$res = array_unique(array_merge($search1,$search2,$search3,$search4));
+	$res = array_unique(array_merge($search1,$search2,$search3,$search4));*/
+	$res = $search1;
 
 	return $res;
 }

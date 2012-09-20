@@ -173,6 +173,7 @@ function acl_init(&$a){
 				"name"  => $g['name'],
 				"id"	=> intval($g['id']),
 				"network" => $g['network'],
+				"networkName" => network_name($g['network']),
 				"link" => $g['url'],
 				"nick" => ($g['attag']) ? $g['attag'] : $g['nick'],
 			);
