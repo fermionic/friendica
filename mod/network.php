@@ -604,7 +604,7 @@ function network_content(&$a, $update = 0) {
 		}
 		else {
 				$contact_str = ' 0 ';
-				info( t('Group is empty'));
+//				info( t('Group is empty'));
 		}
 
 		$sql_extra = " AND `item`.`parent` IN ( SELECT DISTINCT(`parent`) FROM `item` WHERE 1 $sql_options AND ( `contact-id` IN ( $contact_str ) OR `allow_gid` like '" . protect_sprintf('%<' . intval($group) . '>%') . "' ) and deleted = 0 ) ";

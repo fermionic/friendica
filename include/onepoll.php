@@ -303,7 +303,7 @@ function onepoll_run(&$argv, &$argc){
 		}
 		if($mbox) {
 
-			$msgs = email_poll($mbox,$contact['addr']);
+			$msgs = email_poll($mbox,$contact['addr'],$importer_uid);
 
 			if(count($msgs)) {
 				logger("Mail: Parsing ".count($msgs)." mails for ".$mailconf[0]['user'], LOGGER_DEBUG);
