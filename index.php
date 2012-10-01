@@ -1,5 +1,10 @@
 <?php
 
+/*$DEBUGIPS = array('');
+if(array_search($_SERVER['REMOTE_ADDR'], $DEBUGIPS) !== false) {
+#        apd_set_pprof_trace();
+}*/
+
 /**
  *
  * Friendica

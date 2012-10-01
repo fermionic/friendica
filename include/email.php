@@ -12,7 +12,7 @@ function email_connect($mailbox,$username,$password) {
 	return $mbox;
 }
 
-function email_poll($mbox,$email_addr) {
+function email_poll($mbox,$email_addr,$importer_uid = false) {
 
 	if(! ($mbox && $email_addr))
 		return array();
@@ -34,7 +34,34 @@ function email_poll($mbox,$email_addr) {
 		$search4 = array();
 
 	$res = array_unique(array_merge($search1,$search2,$search3,$search4));*/
-	$res = $search1;
+
+	$manual_search = array();
+	if($importer_uid) {
+		// Manually check recent, unchecked emails for emails from $email_addr,
+		// since some providers seem to have buggy response to the "FROM" search
+		$minfo = imap_check($mbox);
+		$last_overview = imap_fetch_overview($mbox, $minfo->Nmsgs, 0);
+		$last_uid = $last_overview[0]->uid;
+
+		$st_uid = get_pconfig($importer_uid, "mailacct." . $email_addr, "last_mail_uid");
+		if($st_uid === false)
+			$st_uid = $last_uid;
+
+		$st_uid = $st_uid + 1;
+
+		$msg_metas = email_msg_meta($mbox,"$st_uid:$last_uid");
+//		for($i = $st_uid; $i <= $last_uid; $i++) {
+		foreach($msg_metas as $msg_meta) {
+			if(strpos($msg_meta->from, $email_addr) !== false) {
+				$manual_search[] = $msg_meta->uid;
+			}
+		}
+
+		set_pconfig($importer_uid, "mailacct." . $email_addr, "last_mail_uid", $last_uid);
+	}
+
+//	$res = $search1;
+	$res = array_unique(array_merge($search1,$manual_search));
 
 	return $res;
 }
