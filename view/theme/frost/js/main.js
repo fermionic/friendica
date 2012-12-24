@@ -448,6 +448,12 @@
 		liking = 1;
 	}
 
+	function doboring(ident,verb) {
+		unpause();
+		$j('#like-rotator-' + ident.toString()).show();
+		$j.get('boring/' + ident.toString() + '?verb=' + verb, NavUpdate );
+	}
+
 	function dostar(ident) {
 		ident = ident.toString();
 //		$j('#like-rotator-' + ident).show();

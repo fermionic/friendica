@@ -239,6 +239,7 @@ define ( 'NAMESPACE_ATOM1',           'http://www.w3.org/2005/Atom' );
 
 define ( 'ACTIVITY_LIKE',        NAMESPACE_ACTIVITY_SCHEMA . 'like' );
 define ( 'ACTIVITY_DISLIKE',     NAMESPACE_DFRN            . '/dislike' );
+define ( 'ACTIVITY_BORING',      NAMESPACE_DFRN            . '/boring' );
 define ( 'ACTIVITY_OBJ_HEART',   NAMESPACE_DFRN            . '/heart' );
 
 define ( 'ACTIVITY_FRIEND',      NAMESPACE_ACTIVITY_SCHEMA . 'make-friend' );

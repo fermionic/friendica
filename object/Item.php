@@ -80,7 +80,7 @@ class Item extends BaseObject {
 	 *      _ The data requested on success
 	 *      _ false on failure
 	 */
-	public function get_template_data($alike, $dlike, $thread_level=1) {
+	public function get_template_data($alike, $dlike, $blist, $thread_level=1) {
 		$result = array();
 
 		$a = $this->get_app();
@@ -164,6 +164,7 @@ class Item extends BaseObject {
 
 		$like    = ((x($alike,$item['uri'])) ? format_like($alike[$item['uri']],$alike[$item['uri'] . '-l'],'like',$item['uri']) : '');
 		$dislike = ((x($dlike,$item['uri'])) ? format_like($dlike[$item['uri']],$dlike[$item['uri'] . '-l'],'dislike',$item['uri']) : '');
+		$boring  = ((x($blist,$item['uri'])) ? format_like($blist[$item['uri']],$blist[$item['uri'] . '-l'],'boring',$item['uri']) : '');
 
 		/*
 		 * We should avoid doing this all the time, but it depends on the conversation mode
@@ -203,6 +204,7 @@ class Item extends BaseObject {
 			$buttons = array(
 				'like' => array( t("I like this \x28toggle\x29"), t("like")),
 				'dislike' => ((feature_enabled($conv->get_profile_owner(),'dislike')) ? array( t("I don't like this \x28toggle\x29"), t("dislike")) : ''),
+				'boring' => ((feature_enabled($conv->get_profile_owner(),'dislike')) ? array( t("I find this boring \x28toggle\x29"), t("boring")) : ''),
 			);
 			if ($shareable) $buttons['share'] = array( t('Share this'), t('share'));
 		}
@@ -287,6 +289,7 @@ class Item extends BaseObject {
 			'vote' => $buttons,
 			'like' => $like,
 			'dislike'   => $dislike,
+			'boring' => $boring,
 			'switchcomment' => t('Comment'),
 			'comment' => $this->get_comment_box($indent),
 			'previewing' => ($conv->is_preview() ? ' preview ' : ''),
@@ -305,7 +308,7 @@ class Item extends BaseObject {
 		$nb_children = count($children);
 		if($nb_children > 0) {
 			foreach($children as $child) {
-				$result['children'][] = $child->get_template_data($alike, $dlike, $thread_level + 1);
+				$result['children'][] = $child->get_template_data($alike, $dlike, $blist, $thread_level + 1);
 			}
 			// Collapse
 			if(($nb_children > 2) || ($thread_level > 1)) {
