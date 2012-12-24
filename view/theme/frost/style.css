@@ -1149,22 +1149,22 @@ input#dfrn-url {
 	border: none;
 }
 
-.wall-item-like, .wall-item-dislike {
+.wall-item-like, .wall-item-dislike, .wall-item-boring {
 	font-style: italic;
 	margin-left: 0px;
 	opacity: 0.4;
 }
-.wall-item-dislike {
+.wall-item-boring {
 	margin-bottom: 15px;
 }
-.wall-item-like:hover, .wall-item-dislike:hover {
+.wall-item-like:hover, .wall-item-dislike:hover, .wall-item-boring:hover {
 	opacity: 1.0;
 }
 
-.wall-item-like.comment, .wall-item-dislike.comment {
+.wall-item-like.comment, .wall-item-dislike.comment, .wall-item-boring.comment {
 	margin-left: 75px;
 }
-.wall-item-dislike.comment {
+.wall-item-boring.comment {
 	margin-bottom: 0px;
 }
 

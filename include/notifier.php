@@ -37,6 +37,7 @@ require_once('include/html2plain.php');
  *		tag						(in photos.php, poke.php, tagger.php)
  *		tgroup					(in items.php)
  *		wall-new				(in photos.php, item.php)
+ *		boring					(in boring.php)
  *
  * and ITEM_ID is the id of the item in the database that needs to be sent to others.
  */
@@ -845,7 +846,7 @@ function notifier_run(&$argv, &$argc){
 					if(! $contact['pubkey'])
 						break;
 					
-					if($target_item['verb'] === ACTIVITY_DISLIKE) {
+					if($target_item['verb'] === ACTIVITY_DISLIKE || $target_item['verb'] === ACTIVITY_BORING) {
 						// unsupported
 						break;
 					}

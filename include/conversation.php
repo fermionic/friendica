@@ -99,7 +99,7 @@ function localize_item(&$item){
 		$item['body'] = item_redir_and_replace_images($extracted['body'], $extracted['images'], $item['contact-id']);
 
 	$xmlhead="<"."?xml version='1.0' encoding='UTF-8' ?".">";
-	if (activity_match($item['verb'],ACTIVITY_LIKE) || activity_match($item['verb'],ACTIVITY_DISLIKE)){
+	if (activity_match($item['verb'],ACTIVITY_LIKE) || activity_match($item['verb'],ACTIVITY_DISLIKE) || activity_match($item['verb'],ACTIVITY_BORING)){
 
 		$r = q("SELECT * from `item`,`contact` WHERE
 				`item`.`contact-id`=`contact`.`id` AND `item`.`uri`='%s';",
@@ -137,6 +137,9 @@ function localize_item(&$item){
 		}
 		elseif(activity_match($item['verb'],ACTIVITY_DISLIKE)) {
 			$bodyverb = t('%1$s doesn\'t like %2$s\'s %3$s');
+		}
+		elseif(activity_match($item['verb'],ACTIVITY_BORING)) {
+			$bodyverb = t('%1$s thinks %2$s\'s %3$s is boring');
 		}
 		$item['body'] = sprintf($bodyverb, $author, $objauthor, $plink);
 
@@ -341,7 +344,7 @@ function count_descendants($item) {
 
 function visible_activity($item) {
 
-	if(activity_match($item['verb'],ACTIVITY_LIKE) || activity_match($item['verb'],ACTIVITY_DISLIKE))
+	if(activity_match($item['verb'],ACTIVITY_LIKE) || activity_match($item['verb'],ACTIVITY_DISLIKE) || activity_match($item['verb'],ACTIVITY_BORING))
 		return false;
 
 	if(activity_match($item['verb'],ACTIVITY_FOLLOW) && $item['object-type'] === ACTIVITY_OBJ_NOTE) {
@@ -474,6 +477,7 @@ function conversation(&$a, $items, $mode, $update, $preview = false) {
 
 	$alike = array();
 	$dlike = array();
+	$blist = array();
 
 
 	// array with html for each thread (parent+comments)
@@ -502,7 +506,8 @@ function conversation(&$a, $items, $mode, $update, $preview = false) {
 				$sparkle     = '';
 
 				if($mode === 'search' || $mode === 'community') {
-					if(((activity_match($item['verb'],ACTIVITY_LIKE)) || (activity_match($item['verb'],ACTIVITY_DISLIKE)))
+					if(((activity_match($item['verb'],ACTIVITY_LIKE)) || (activity_match($item['verb'],ACTIVITY_DISLIKE))
+					    || (activity_match($item['verb'],ACTIVITY_BORING)))
 						&& ($item['id'] != $item['parent']))
 						continue;
 					$nickname = $item['nickname'];
@@ -639,6 +644,7 @@ function conversation(&$a, $items, $mode, $update, $preview = false) {
 					'vote' => $likebuttons,
 					'like' => '',
 					'dislike' => '',
+					'boring' => '',
 					'comment' => '',
 					'conv' => (($preview) ? '' : array('href'=> $a->get_baseurl($ssl_state) . '/display/' . $nickname . '/' . $item['id'], 'title'=> t('View in context'))),
 					'previewing' => $previewing,
@@ -675,6 +681,7 @@ function conversation(&$a, $items, $mode, $update, $preview = false) {
 				// Can we put this after the visibility check?
 				like_puller($a,$item,$alike,'like');
 				like_puller($a,$item,$dlike,'dislike');
+				like_puller($a,$item,$blist,'boring');
 
 				// Only add what is visible
 				if($item['network'] === NETWORK_MAIL && local_user() != $item['uid']) {
@@ -692,7 +699,7 @@ function conversation(&$a, $items, $mode, $update, $preview = false) {
 				}
 			}
 
-			$threads = $conv->get_template_data($alike, $dlike);
+			$threads = $conv->get_template_data($alike, $dlike, $blist);
 			if(!$threads) {
 				logger('[ERROR] conversation : Failed to get template data.', LOGGER_DEBUG);
 				$threads = array();
@@ -839,7 +846,17 @@ function like_puller($a,$item,&$arr,$mode) {
 
 	$url = '';
 	$sparkle = '';
-	$verb = (($mode === 'like') ? ACTIVITY_LIKE : ACTIVITY_DISLIKE);
+	switch($mode) {
+		case 'like':
+			$verb = ACTIVITY_LIKE;
+			break;
+		case 'dislike':
+			$verb = ACTIVITY_DISLIKE;
+			break;
+		case 'boring':
+			$verb = ACTIVITY_BORING;
+			break;
+	}
 
 	if((activity_match($item['verb'],$verb)) && ($item['id'] != $item['parent'])) {
 		$url = $item['author-link'];
@@ -874,8 +891,20 @@ function like_puller($a,$item,&$arr,$mode) {
 if(! function_exists('format_like')) {
 function format_like($cnt,$arr,$type,$id) {
 	$o = '';
-	if($cnt == 1)
-		$o .= (($type === 'like') ? sprintf( t('%s likes this.'), $arr[0]) : sprintf( t('%s doesn\'t like this.'), $arr[0])) . EOL ;
+	if($cnt == 1) {
+		switch($type) {
+			case 'like':
+				$phrase = sprintf( t('%s likes this.'), $arr[0]);
+				break;
+			case 'dislike':
+				$phrase = sprintf( t('%s doesn\'t like this.'), $arr[0]);
+				break;
+			case 'boring':
+				$phrase = sprintf( t('%s thinks this is boring.'), $arr[0]);
+				break;
+		}
+		$o .= $phrase . EOL ;
+	}
 	else {
 		//$spanatts = 'class="fakelink" onclick="openClose(\'' . $type . 'list-' . $id . '\');"';
 		switch($type) {
@@ -886,6 +915,9 @@ function format_like($cnt,$arr,$type,$id) {
 			case 'dislike':
 //				$phrase = sprintf( t('<span  %1$s>%2$d people</span> don\'t like this.'), $spanatts, $cnt);
 				$mood = t('don\'t like this');
+				break;
+			case 'boring':
+				$mood = t('think this is boring');
 				break;
 		}
 		$tpl = get_markup_template("voting_fakelink.tpl");
@@ -910,7 +942,17 @@ function format_like($cnt,$arr,$type,$id) {
 			$str = implode(', ', $arr);
 			$str .= sprintf( t(', and %d other people'), $total - MAX_LIKERS );
 		}
-		$str = (($type === 'like') ? sprintf( t('%s like this.'), $str) : sprintf( t('%s don\'t like this.'), $str));
+		switch($type) {
+			case 'like':
+				$str = sprintf( t('%s like this.'), $str);
+				break;
+			case 'dislike':
+				$str = sprintf( t('%s don\'t like this.'), $str);
+				break;
+			case 'boring':
+				$str = sprintf( t('%s think this is boring.'), $str);
+				break;
+		}
 		$o .= "\t" . '<div id="' . $type . 'list-' . $id . '" style="display: none;" >' . $str . '</div>';
 	}
 	return $o;
