@@ -6,10 +6,6 @@
 
 {{$preamble}}
 	
-{{$title}}
-
-{{$textversion}}
-				
 {{$tsitelink}}
 {{$titemlink}}
 
