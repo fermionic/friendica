@@ -101,6 +101,7 @@
 	<!--<div class="wall-item-wrapper-end"></div>-->
 	<div class="wall-item-like {{$item.indent}}" id="wall-item-like-{{$item.id}}">{{$item.like}}</div>
 	<div class="wall-item-dislike {{$item.indent}}" id="wall-item-dislike-{{$item.id}}">{{$item.dislike}}</div>
+	<div class="wall-item-boring {{$item.indent}}" id="wall-item-boring-{{$item.id}}">{{$item.boring}}</div>
 
 	{{if $item.threaded}}
 	{{if $item.comment}}

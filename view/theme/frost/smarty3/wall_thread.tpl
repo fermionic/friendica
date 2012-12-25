@@ -69,6 +69,9 @@
 				{{if $item.vote.dislike}}
 				<a href="#" class="tool dislike" title="{{$item.vote.dislike.0}}" onclick="dolike({{$item.id}},'dislike'); return false"></a>
 				{{/if}}
+				{{if $item.vote.boring}}
+				<a href="#" class="tool boring" title="{{$item.vote.boring.0}}" onclick="doboring({{$item.id}},'boring'); return false"></a>
+				{{/if}}
 				{{if $item.vote.share}}<a href="#" class="tool recycle wall-item-share-buttons" title="{{$item.vote.share.0}}" onclick="jotShare({{$item.id}}); return false"></a>{{/if}}
 				<img id="like-rotator-{{$item.id}}" class="like-rotator" src="images/rotator.gif" alt="{{$item.wait}}" title="{{$item.wait}}" style="display: none;" />
 			</div>
@@ -100,6 +103,7 @@
 	<!--<div class="wall-item-wrapper-end"></div>-->
 	<div class="wall-item-like {{$item.indent}}" id="wall-item-like-{{$item.id}}">{{$item.like}}</div>
 	<div class="wall-item-dislike {{$item.indent}}" id="wall-item-dislike-{{$item.id}}">{{$item.dislike}}</div>
+	<div class="wall-item-boring {{$item.indent}}" id="wall-item-boring-{{$item.id}}">{{$item.boring}}</div>
 
 	{{if $item.threaded}}
 	{{if $item.comment}}

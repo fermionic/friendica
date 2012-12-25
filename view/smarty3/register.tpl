@@ -52,6 +52,9 @@
 	{{$publish}}
 
 	<div id="register-submit-wrapper">
+		<br>
+		By clicking {{$regbutt}} you are agreeing to the latest <a href="tos.html" title="{{$tostitle}}" id="terms-of-service-link" >{{$toslink}}</a> and <a href="privacy.html" title="{{$privacytitle}}" id="privacy-link" >{{$privacylink}}</a><br>
+		<br>
 		<input type="submit" name="submit" id="register-submit-button" value="{{$regbutt}}" />
 	</div>
 	<div id="register-submit-end" ></div>
