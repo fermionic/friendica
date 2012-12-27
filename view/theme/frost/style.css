@@ -3468,6 +3468,7 @@ aside input[type='text'] {
 /*.dislike { background-position: -112px 0px;}*/
 .tool.dislike {
 	display: block; width: 15px; height: 16px;/* 23 24*/
+	margin-right: 6px;
 	background-size: 100% 100%;
 	background-image: url('images/disapprove-16.png');
 	background-repeat: no-repeat;
@@ -3486,6 +3487,17 @@ aside input[type='text'] {
 	opacity: 0.4;
 }
 .tool.like:hover {
+	opacity: 1.0;
+}
+.tool.boring {
+	display: block; width: 16px; height: 16px;
+	margin-right: 6px;
+	background-size: 100% 100%;
+	background-image: url('images/boring-16.png');
+	background-repeat: no-repeat;
+	opacity: 0.4;
+}
+.tool.boring:hover {
 	opacity: 1.0;
 }
 /*.link { background-position: -144px 0px;}*/
