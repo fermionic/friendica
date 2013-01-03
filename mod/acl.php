@@ -2,6 +2,7 @@
 /* ACL selector json backend */
 
 require_once("include/acl_selectors.php");
+require_once("include/contact_selectors.php");
 
 function acl_init(&$a){
 	if(!local_user())
@@ -173,7 +174,7 @@ function acl_init(&$a){
 				"name"  => $g['name'],
 				"id"	=> intval($g['id']),
 				"network" => $g['network'],
-				"networkName" => network_name($g['network']),
+				"networkName" => network_to_name($g['network']),
 				"link" => $g['url'],
 				"nick" => ($g['attag']) ? $g['attag'] : $g['nick'],
 			);
